@@ -1,0 +1,146 @@
+# Koko Dio Kitchen: menu digital
+
+Website menu rice box Koko Dio Kitchen. Dibuka pelanggan lewat HP dari QR code di kasir atau di meja. Satu halaman statis: Next.js (App Router), TypeScript strict, Tailwind CSS v4.
+
+## Menjalankan di komputer sendiri
+
+Butuh Node.js 20.9 atau lebih baru.
+
+```bash
+npm install
+npm run dev
+```
+
+Buka http://localhost:3000.
+
+Perintah lain:
+
+| Perintah | Fungsi |
+|---|---|
+| `npm run build` lalu `npm start` | Build produksi dan jalankan hasilnya |
+| `npm run lint` | Cek kode dengan ESLint |
+| `npm run typecheck` | Cek tipe TypeScript |
+| `npm run assets` | Buat ulang logo, favicon, ikon, dan gambar OG dari file di `assets-source/` |
+| `npm run screenshots -- http://localhost:3000` | Screenshot di 360, 375, 390, 430, 768, 1280 px ke folder `screenshots/`, sekaligus cek horizontal scroll, ukuran target sentuh, dan filter kategori. Butuh `npx playwright install chromium` sekali. |
+
+## Mengganti menu dan harga
+
+Semua menu ada di satu file: `src/data/menu.ts`.
+
+```ts
+{ id: "katsu-ori", name: "Katsu Ori", price: 18000 },
+```
+
+- **Ganti harga**: ubah angka `price` (tanpa titik, tanpa "Rp"). Tampilan `Rp18.000` dibuat otomatis.
+- **Tambah menu**: tambah satu baris baru. `id` huruf kecil dan tanda hubung, harus unik.
+- **Urutan**: urutan baris = urutan tampil.
+- **Kelompok harga** dibuat otomatis dari `price`. Kalau nanti ada harga baru (misalnya 30000), section dan tombol kategori `Rp30.000` muncul sendiri.
+- **Stok habis**: tambahkan `available: false`. Kartu tetap tampil, meredup, dengan stiker "Habis".
+- **Deskripsi** (opsional): tambahkan `description: "..."`. Kalau kosong, kartu tetap rapi.
+
+Teks di hero ("10 rasa, mulai Rp18.000.") dan deskripsi untuk Google juga dihitung dari file ini, jadi tidak perlu diedit manual.
+
+### Nomor WhatsApp dan Instagram
+
+Edit `src/data/site.ts`:
+
+```ts
+whatsapp: "6281234567890",   // format internasional, tanpa + dan spasi
+instagram: "kokodiokitchen", // tanpa @
+```
+
+Selama kosong, tombol "Pesan lewat WhatsApp" dan link Instagram tidak tampil sama sekali. Setelah diisi, tombol WhatsApp muncul di hero dan footer dengan pesan pembuka "Halo Koko Dio Kitchen, saya mau pesan rice box.", dan link Instagram muncul di footer.
+
+## Memasang foto menu
+
+1. Foto dengan **rasio 4:3 landscape**. Ini rasio bawaan kamera HP, jadi biasanya tidak perlu dipotong. Ukuran yang disarankan **1200 × 900 px**, format JPG, di bawah 300 KB.
+2. Beri nama file sesuai `id` menu, lalu taruh di `public/menu/`. Contoh: `public/menu/katsu-ori.jpg`.
+3. Isi field `image` di `src/data/menu.ts`:
+
+   ```ts
+   { id: "katsu-ori", name: "Katsu Ori", price: 18000, image: "/menu/katsu-ori.jpg" },
+   ```
+
+Bingkai gambar sudah dikunci 4:3, jadi saat foto masuk tidak ada pergeseran layout. Foto dengan rasio lain otomatis dipotong di tengah. Next.js mengecilkan dan mengonversi foto ke AVIF/WebP secara otomatis. Empat foto pertama dimuat langsung, sisanya dimuat saat di-scroll.
+
+## Push ke GitHub
+
+Project ini sudah punya commit lokal. Langkahnya:
+
+1. Buat repository baru di https://github.com/new. Jangan centang "Add a README" supaya repository kosong.
+2. Di folder project, jalankan (ganti `USERNAME` dan `NAMA-REPO`):
+
+   ```bash
+   git remote add origin https://github.com/USERNAME/NAMA-REPO.git
+   git branch -M main
+   git push -u origin main
+   ```
+
+## Deploy ke Vercel
+
+1. Masuk ke https://vercel.com dengan akun GitHub.
+2. Klik **Add New → Project**, pilih repository tadi, lalu **Import**.
+3. Framework preset **Next.js** terdeteksi otomatis. Build command, output, dan root directory biarkan default. Tidak perlu `vercel.json`.
+4. Klik **Deploy**. Setelah selesai, Vercel memberi URL seperti `https://nama-repo.vercel.app`.
+
+Setiap kali ada `git push` ke `main`, Vercel otomatis deploy ulang. Jadi mengganti harga cukup dengan edit `menu.ts`, commit, lalu push.
+
+Folder `assets-source/` (logo resolusi penuh, 3,7 MB) tidak di-import oleh kode dan tidak ada di `public/`, jadi tidak pernah masuk ke hasil build. Folder ini juga tercantum di `.vercelignore`.
+
+### Variabel environment (opsional)
+
+Lihat `.env.example`. Hanya ada satu:
+
+| Nama | Isi | Kapan perlu |
+|---|---|---|
+| `NEXT_PUBLIC_SITE_URL` | URL final, misalnya `https://menu.kokodiokitchen.com` | Kalau memakai domain sendiri. Dipakai untuk link preview (Open Graph) saat URL dibagikan di WhatsApp atau Instagram. |
+
+Kalau tidak diisi, website memakai domain produksi Vercel (`VERCEL_PROJECT_PRODUCTION_URL`, otomatis tersedia di Vercel), dan di komputer lokal memakai `http://localhost:3000`.
+
+Cara mengisi di Vercel: **Project → Settings → Environment Variables**, tambahkan nama dan nilainya, lalu **Redeploy**.
+
+## Membuat QR code untuk kasir
+
+1. Pastikan URL final sudah benar dan bisa dibuka dari HP.
+2. Buat QR dari URL itu. Contoh pakai Node, langsung jadi file PNG 1200 px:
+
+   ```bash
+   npx qrcode -o qr-menu.png -w 1200 https://nama-repo.vercel.app
+   ```
+
+   Bisa juga lewat generator QR mana saja. Pilih yang **statis** (URL langsung tertanam di QR), bukan "dynamic QR" yang lewat server pihak ketiga dan bisa berhenti berfungsi.
+3. Saat mencetak: QR hitam di atas putih, sisakan margin putih di sekelilingnya, dan ukuran minimal 3 × 3 cm (5 cm lebih aman untuk dipindai dari jarak meja). Tulis juga URL-nya di bawah QR sebagai cadangan.
+4. Uji scan pakai kamera beberapa HP berbeda sebelum dicetak banyak.
+
+## Keputusan desain
+
+1. **Font**: Lilita One untuk judul, karena hurufnya bulat, gemuk, dan rapat seperti wordmark logo. Plus Jakarta Sans untuk teks, karena tetap jelas di ukuran kecil dan dirancang oleh studio tipografi Indonesia.
+2. **Gaya sticker**: semua kartu, tombol, dan label memakai border hitam 2,5 px, sudut membulat besar, dan bayangan keras 4 px tanpa blur, meniru outline logo. Skill `taste-skill` melarang bayangan dan `design-taste-frontend` melarang hitam murni. Keduanya kalah oleh palet dan gaya logo sesuai aturan prioritas brief.
+3. **Label harga sebagai stiker besar**: tiap kelompok dibuka label harga besar yang sedikit miring. Tier Rp18.000 berwarna orange, tier Rp25.000 berwarna hitam. Pembeli langsung tahu dua tingkat harga tanpa membaca nama menu.
+4. **Grid**: di HP 2 kolom. Pada lebar 360 px kartu masih 158 px, foto tetap jelas, dan empat menu terlihat sekaligus, jadi kartu horizontal 1 kolom tidak dipakai. Tablet 3 kolom. Desktop memilih 3 atau 4 kolom otomatis supaya baris terakhir tidak bolong (6 menu jadi 3+3, 4 menu jadi 4).
+5. **Placeholder**: ilustrasi kotak rice box dengan uap, digambar sendiri dalam SVG memakai warna palet, di atas latar peach dengan label "Foto menyusul". Bukan stock photo dan bukan karakter koki. Rasio dikunci 4:3. Saran `design-taste-frontend` untuk memakai foto stok tidak diikuti karena brief melarang.
+6. **Navigasi kategori jadi filter**, bukan lompat ke section. Dengan scroll, "Semua" dan "Rp18.000" berhenti di titik yang sama dan tombolnya jadi membingungkan. Dengan filter, tiap tombol punya arti jelas. Tanpa JavaScript, tombol tetap berfungsi sebagai link ke section.
+7. **Tema terang saja**: `design-taste-frontend` menyarankan dark mode, tapi brief menetapkan tema terang supaya warna logo dan kemasan tampil apa adanya.
+8. **Gerak**: hanya satu momen masuk (logo "ditempel" seperti stiker) dan efek tekan pada tombol. Semua mati otomatis kalau HP memakai pengaturan kurangi gerak (`prefers-reduced-motion`).
+
+## Catatan teknis
+
+- File logo sumber ternyata 20834 × 20834 px (bukan 8000) dan latarnya sudah transparan, jadi `scripts/prepare-assets.mjs` melewati flood-fill. Jalur flood-fill tetap ada dan sudah diuji: topi dan baju putih tidak ikut terhapus.
+- Favicon dan ikon memakai crop kepala karakter, karena logo penuh terlalu detail di 32 px.
+- Next.js 16 mengganti prop `priority` di `next/image` dengan `preload`. Logo hero memakai `preload`.
+- Logo kecil di header memakai file 1x/2x yang sudah dikecilkan script, jadi tidak lewat image optimizer.
+
+## Struktur folder
+
+```
+assets-source/          Logo resolusi penuh (tidak ikut build)
+public/brand/           Logo hero dan header hasil script
+public/og.png           Gambar preview saat link dibagikan
+public/menu/            Foto menu (buat foldernya saat foto pertama masuk)
+scripts/                prepare-assets.mjs, screenshots.mjs
+src/app/                layout, halaman, CSS global, favicon, ikon, manifest
+src/components/         Header, Hero, CategoryNav, MenuSection, MenuCard, MenuImage, Footer, WhatsAppButton
+src/data/menu.ts        Daftar menu dan harga
+src/data/site.ts        Nama brand, WhatsApp, Instagram
+src/lib/                Format harga, pengelompokan, link kontak, warna untuk metadata
+```

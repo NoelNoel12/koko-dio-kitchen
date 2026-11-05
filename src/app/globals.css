@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #000000;
+  --color-orange: #fa5b17;
+  --color-orange-deep: #d94a0e;
+  --color-peach: #fcd6b1;
+  --color-paper: #ffffff;
+  --color-cream: #fff9ea;
+
+  --font-display: var(--font-lilita), "Arial Rounded MT Bold", system-ui, sans-serif;
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+
+  --radius-sticker: 1.125rem;
+  --radius-chip: 0.875rem;
+
+  --shadow-sticker: 4px 4px 0 0 var(--color-ink);
+  --shadow-sticker-lg: 6px 6px 0 0 var(--color-ink);
+  --shadow-sticker-press: 1px 1px 0 0 var(--color-ink);
+
+  --ease-snap: cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+:root {
+  color-scheme: light;
+  --nav-height: 4.5rem;
+}
+
+html {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: var(--nav-height);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  min-height: 100dvh;
+  overflow-x: clip;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+
+::selection {
+  background: var(--color-peach);
+  color: var(--color-ink);
+}
+
+@utility page-gutter {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+
+  @media (width >= 40rem) {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+}
+
+@utility sticker {
+  border: 2.5px solid var(--color-ink);
+  border-radius: var(--radius-sticker);
+  box-shadow: var(--shadow-sticker);
+}
+
+@utility press {
+  transition:
+    transform 140ms var(--ease-snap),
+    box-shadow 140ms var(--ease-snap),
+    background-color 140ms ease-out;
+
+  &:active {
+    transform: translate(3px, 3px);
+    box-shadow: var(--shadow-sticker-press);
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 5px 5px 0 0 var(--color-ink);
+    }
+
+    &:active {
+      transform: translate(3px, 3px);
+      box-shadow: var(--shadow-sticker-press);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: background-color 140ms ease-out;
+
+    &:hover,
+    &:active {
+      transform: none;
+    }
+  }
+}
+
+@keyframes sticker-slap {
+  from {
+    opacity: 0;
+    transform: rotate(-11deg) scale(1.12);
+  }
+
+  to {
+    opacity: 1;
+    transform: rotate(-3deg) scale(1);
+  }
+}
+
+@utility hero-logo {
+  transform: rotate(-3deg);
+  filter: drop-shadow(5px 5px 0 var(--color-ink));
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: sticker-slap 520ms var(--ease-snap) both;
+  }
+}
