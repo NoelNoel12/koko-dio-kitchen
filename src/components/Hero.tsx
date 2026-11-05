@@ -2,6 +2,7 @@ import Image from "next/image"
 import { menu } from "@/data/menu"
 import { site } from "@/data/site"
 import { formatPrice } from "@/lib/menu"
+import { EventDate } from "@/components/EventDate"
 import { WhatsAppButton } from "@/components/WhatsAppButton"
 
 export function Hero() {
@@ -32,8 +33,18 @@ export function Hero() {
           {menu.length} rasa, mulai {formatPrice(cheapest)}.
         </p>
       </div>
-      <div className="col-span-2 mt-5 grid empty:hidden sm:col-span-1 sm:col-start-2 sm:mt-0 sm:block sm:self-start sm:pt-6">
-        <WhatsAppButton />
+      <div className="col-span-2 mt-5 flex flex-col gap-4 sm:col-span-1 sm:col-start-2 sm:mt-0 sm:self-start sm:pt-6">
+        <div className="space-y-1 text-[0.95rem] leading-snug sm:text-base">
+          {site.event.date ? <EventDate date={site.event.date} place={site.event.place} /> : null}
+          {site.payment.length > 0 ? (
+            <p>
+              <span className="font-bold">Bayar langsung di booth</span>: {site.payment.join(" atau ")}
+            </p>
+          ) : null}
+        </div>
+        <div className="grid empty:hidden sm:block">
+          <WhatsAppButton />
+        </div>
       </div>
     </section>
   )

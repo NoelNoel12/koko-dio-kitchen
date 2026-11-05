@@ -21,6 +21,7 @@ Perintah lain:
 | `npm run lint` | Cek kode dengan ESLint |
 | `npm run typecheck` | Cek tipe TypeScript |
 | `npm run assets` | Buat ulang logo, favicon, ikon, dan gambar OG dari file di `assets-source/` |
+| `npm run print` | Buat ulang QR code dan file cetak di folder `print/` (lihat bagian QR code) |
 | `npm run screenshots -- http://localhost:3000` | Screenshot di 360, 375, 390, 430, 768, 1280 px ke folder `screenshots/`, sekaligus cek horizontal scroll, ukuran target sentuh, dan filter kategori. Butuh `npx playwright install chromium` sekali. |
 
 ## Mengganti menu dan harga
@@ -35,10 +36,24 @@ Semua menu ada di satu file: `src/data/menu.ts`.
 - **Tambah menu**: tambah satu baris baru. `id` huruf kecil dan tanda hubung, harus unik.
 - **Urutan**: urutan baris = urutan tampil.
 - **Kelompok harga** dibuat otomatis dari `price`. Kalau nanti ada harga baru (misalnya 30000), section dan tombol kategori `Rp30.000` muncul sendiri.
-- **Stok habis**: tambahkan `available: false`. Kartu tetap tampil, meredup, dengan stiker "Habis".
+- **Stok habis**: ganti `available: true` menjadi `available: false`. Kartu tetap tampil, meredup, dengan stiker "Habis". Saat acara, ini bisa dilakukan dari HP lewat github.com: lihat [PANDUAN-STOK-HABIS.md](PANDUAN-STOK-HABIS.md).
 - **Deskripsi** (opsional): tambahkan `description: "..."`. Kalau kosong, kartu tetap rapi.
 
 Teks di hero ("10 rasa, mulai Rp18.000.") dan deskripsi untuk Google juga dihitung dari file ini, jadi tidak perlu diedit manual.
+
+> Kalau menu pernah diedit lewat github.com (misalnya menandai "Habis" saat acara), jalankan `git pull` dulu sebelum mengedit di komputer, supaya perubahan dari HP tidak tertimpa.
+
+### Cara bayar dan jadwal jualan
+
+Di `src/data/site.ts`:
+
+```ts
+payment: ["tunai", "QRIS"],
+event: { date: "2026-11-27", place: "kampus" },
+```
+
+- `payment` tampil di hero sebagai "Bayar langsung di booth: tunai atau QRIS". Website ini hanya untuk melihat menu, tidak ada pembayaran lewat website.
+- `event` tampil sebagai "Jualan di kampus: Jumat, 27 November 2026". Pada hari-H tulisannya berubah menjadi "Hari ini jualan di kampus", dan setelah tanggalnya lewat info ini hilang sendiri. Pengecekan tanggal dilakukan di browser pengunjung dengan zona waktu WIB. Untuk acara berikutnya, cukup ganti tanggalnya. Untuk menyembunyikan, isi `date: ""`.
 
 ### Nomor WhatsApp dan Instagram
 
@@ -99,18 +114,37 @@ Kalau tidak diisi, website memakai domain produksi Vercel (`VERCEL_PROJECT_PRODU
 
 Cara mengisi di Vercel: **Project → Settings → Environment Variables**, tambahkan nama dan nilainya, lalu **Redeploy**.
 
-## Membuat QR code untuk kasir
+## QR code dan file cetak untuk booth
 
-1. Pastikan URL final sudah benar dan bisa dibuka dari HP.
-2. Buat QR dari URL itu. Contoh pakai Node, langsung jadi file PNG 1200 px:
+File siap cetak ada di folder `print/`, semuanya mengarah ke https://koko-dio-kitchen.vercel.app/:
 
-   ```bash
-   npx qrcode -o qr-menu.png -w 1200 https://nama-repo.vercel.app
-   ```
+| File | Pakai untuk |
+|---|---|
+| `standee-a4.pdf` | Standee atau poster di depan booth, terbaca dari antrean (QR sekitar 8 cm) |
+| `kartu-meja-a6.pdf` | Kartu di meja atau kasir (QR sekitar 4 cm) |
+| `qr-menu.svg`, `qr-menu.png` | QR polos untuk desain lain, misalnya stiker kemasan atau feed Instagram |
+| `*.png` lainnya | Pratinjau 300 dpi dari tiap PDF |
 
-   Bisa juga lewat generator QR mana saja. Pilih yang **statis** (URL langsung tertanam di QR), bukan "dynamic QR" yang lewat server pihak ketiga dan bisa berhenti berfungsi.
-3. Saat mencetak: QR hitam di atas putih, sisakan margin putih di sekelilingnya, dan ukuran minimal 3 × 3 cm (5 cm lebih aman untuk dipindai dari jarak meja). Tulis juga URL-nya di bawah QR sebagai cadangan.
-4. Uji scan pakai kamera beberapa HP berbeda sebelum dicetak banyak.
+QR-nya statis: URL langsung tertanam di kode, tanpa layanan pihak ketiga yang bisa berhenti berfungsi. Kartu juga menulis jelas bahwa QR ini hanya untuk melihat menu, supaya pembeli tidak salah memindainya untuk membayar. Pembayaran tetap lewat QRIS milik toko di kasir.
+
+Kalau URL, harga termurah, jumlah rasa, atau cara bayar berubah, buat ulang semua file dengan:
+
+```bash
+npm run print
+```
+
+Atau untuk URL lain (misalnya domain sendiri):
+
+```bash
+npm run print -- https://menu.kokodiokitchen.com/
+```
+
+Script ini juga membaca balik QR di setiap file untuk memastikan hasilnya terbaca dan mengarah ke URL yang benar.
+
+Saat mencetak:
+1. Cetak PDF dengan skala **100% / ukuran sebenarnya**, jangan "fit to page".
+2. Kertas tebal atau art paper doff lebih baik daripada glossy, karena kilap lampu bisa mengganggu pemindaian.
+3. Uji pindai hasil cetak dengan kamera beberapa HP berbeda sebelum mencetak banyak.
 
 ## Keputusan desain
 
@@ -137,10 +171,12 @@ assets-source/          Logo resolusi penuh (tidak ikut build)
 public/brand/           Logo hero dan header hasil script
 public/og.png           Gambar preview saat link dibagikan
 public/menu/            Foto menu (buat foldernya saat foto pertama masuk)
-scripts/                prepare-assets.mjs, screenshots.mjs
+print/                  QR code, standee A4, dan kartu meja A6 (tidak ikut build)
+scripts/                prepare-assets.mjs, print-qr.mjs, screenshots.mjs
 src/app/                layout, halaman, CSS global, favicon, ikon, manifest
-src/components/         Header, Hero, CategoryNav, MenuSection, MenuCard, MenuImage, Footer, WhatsAppButton
-src/data/menu.ts        Daftar menu dan harga
-src/data/site.ts        Nama brand, WhatsApp, Instagram
+src/components/         Header, Hero, EventDate, CategoryNav, MenuSection, MenuCard, MenuImage, Footer, WhatsAppButton
+src/data/menu.ts        Daftar menu, harga, dan status habis
+src/data/site.ts        Nama brand, WhatsApp, Instagram, cara bayar, jadwal jualan
+PANDUAN-STOK-HABIS.md   Cara menandai rasa habis dari HP saat acara
 src/lib/                Format harga, pengelompokan, link kontak, warna untuk metadata
 ```

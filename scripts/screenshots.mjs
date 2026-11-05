@@ -58,7 +58,7 @@ for (const viewport of viewports) {
   for (const label of ["Rp25.000", "Rp18.000", "Semua"]) {
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
     await page.getByRole("link", { name: label, exact: true }).click()
-    await page.waitForTimeout(900)
+    await page.waitForTimeout(1500)
     navChecks.push(
       await page.evaluate((chip) => {
         const nav = document.querySelector("nav")?.getBoundingClientRect()

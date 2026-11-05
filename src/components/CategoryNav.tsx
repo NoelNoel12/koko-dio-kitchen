@@ -38,7 +38,8 @@ export function CategoryNav({ categories, menuId }: Props) {
       id === ALL ? `Menampilkan semua ${total} rasa` : `Menampilkan ${picked?.count} rasa ${picked?.label}`,
     )
 
-    if (menu.getBoundingClientRect().top < 0 || id !== ALL) {
+    const navBottom = event.currentTarget.closest("nav")?.getBoundingClientRect().bottom ?? 0
+    if (menu.getBoundingClientRect().top < navBottom - 1 || id !== ALL) {
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
       menu.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" })
     }
