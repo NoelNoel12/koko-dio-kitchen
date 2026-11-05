@@ -10,7 +10,8 @@ import { menu } from "../src/data/menu.ts"
 import { site } from "../src/data/site.ts"
 import { formatPrice } from "../src/lib/menu.ts"
 
-const url = process.argv[2] ?? process.env.NEXT_PUBLIC_SITE_URL ?? "https://koko-dio-kitchen.vercel.app/"
+// The short link redirects to the Vercel site, so the printed QR keeps working if the site moves.
+const url = process.argv[2] ?? "https://bit.ly/kokodiokitchen"
 const root = path.resolve(import.meta.dirname, "..")
 const outDir = path.join(root, "print")
 const fileUrl = (...parts) => pathToFileURL(path.join(root, ...parts)).href

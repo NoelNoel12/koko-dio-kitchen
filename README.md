@@ -116,7 +116,7 @@ Cara mengisi di Vercel: **Project → Settings → Environment Variables**, tamb
 
 ## QR code dan file cetak untuk booth
 
-File siap cetak ada di folder `print/`, semuanya mengarah ke https://koko-dio-kitchen.vercel.app/:
+File siap cetak ada di folder `print/`. Semua QR berisi https://bit.ly/kokodiokitchen, yang diteruskan ke https://koko-dio-kitchen.vercel.app/:
 
 | File | Pakai untuk |
 |---|---|
@@ -125,15 +125,15 @@ File siap cetak ada di folder `print/`, semuanya mengarah ke https://koko-dio-ki
 | `qr-menu.svg`, `qr-menu.png` | QR polos untuk desain lain, misalnya stiker kemasan atau feed Instagram |
 | `*.png` lainnya | Pratinjau 300 dpi dari tiap PDF |
 
-QR-nya statis: URL langsung tertanam di kode, tanpa layanan pihak ketiga yang bisa berhenti berfungsi. Kartu juga menulis jelas bahwa QR ini hanya untuk melihat menu, supaya pembeli tidak salah memindainya untuk membayar. Pembayaran tetap lewat QRIS milik toko di kasir.
+Karena QR berisi link Bitly, tujuan link bisa diubah dari dashboard Bitly tanpa mencetak ulang (misalnya kalau nanti pindah ke domain sendiri). Konsekuensinya, QR yang sudah tercetak bergantung pada link Bitly itu: jangan hapus link atau akun Bitly-nya selama kartu masih dipakai. Kartu juga menulis jelas bahwa QR ini hanya untuk melihat menu, supaya pembeli tidak salah memindainya untuk membayar. Pembayaran tetap lewat QRIS milik toko di kasir.
 
-Kalau URL, harga termurah, jumlah rasa, atau cara bayar berubah, buat ulang semua file dengan:
+Kalau harga termurah, jumlah rasa, atau cara bayar berubah, buat ulang semua file dengan:
 
 ```bash
 npm run print
 ```
 
-Atau untuk URL lain (misalnya domain sendiri):
+Atau untuk link lain:
 
 ```bash
 npm run print -- https://menu.kokodiokitchen.com/
