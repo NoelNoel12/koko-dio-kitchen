@@ -1,4 +1,6 @@
 import { menu } from "@/data/menu"
+import { menuDetail } from "@/data/menu-detail"
+import { MenuDetailProvider } from "@/components/MenuDetail"
 import { formatPrice, groupByPrice } from "@/lib/menu"
 import { CategoryNav } from "@/components/CategoryNav"
 import { Hero } from "@/components/Hero"
@@ -22,16 +24,18 @@ export default function Home() {
       <main>
         <Hero />
         <CategoryNav categories={categories} menuId="menu" />
-        <div id="menu" className="page-gutter mx-auto w-full max-w-[1100px]">
-          {tiers.map((tier, index) => (
-            <MenuSection
-              key={tier.id}
-              tier={tier}
-              variant={index % 2 === 0 ? "orange" : "ink"}
-              eagerCount={index === 0 ? ABOVE_FOLD_CARDS : 0}
-            />
-          ))}
-        </div>
+        <MenuDetailProvider items={menu} details={menuDetail}>
+          <div id="menu" className="page-gutter mx-auto w-full max-w-[1100px]">
+            {tiers.map((tier, index) => (
+              <MenuSection
+                key={tier.id}
+                tier={tier}
+                variant={index % 2 === 0 ? "orange" : "ink"}
+                eagerCount={index === 0 ? ABOVE_FOLD_CARDS : 0}
+              />
+            ))}
+          </div>
+        </MenuDetailProvider>
       </main>
       <SiteFooter />
     </>

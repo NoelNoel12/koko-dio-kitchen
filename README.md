@@ -41,6 +41,19 @@ Semua menu ada di satu file: `src/data/menu.ts`.
 
 Teks di hero ("10 rasa, mulai Rp18.000.") dan deskripsi untuk Google juga dihitung dari file ini, jadi tidak perlu diedit manual.
 
+### Isi rice box (nasi, lauk, saus, pelengkap)
+
+Setiap kartu menu bisa ditekan untuk membuka panel detail. Isinya diatur di `src/data/menu-detail.ts`, dicocokkan lewat `id` yang sama dengan `menu.ts`:
+
+```ts
+"katsu-ori": { nasi: "", lauk: "", saus: "", pelengkap: "" },
+```
+
+- Isian yang masih kosong tampil sebagai kotak **"Menyusul"**, ditambah catatan "Detail isi sedang dilengkapi". Jadi aman ditayangkan sebelum info aslinya didapat, karena tidak ada isi yang dikarang.
+- Isi teksnya begitu info asli sudah ada, misalnya `nasi: "Nasi putih"`.
+- Nama dan urutan baris (Nasi, Lauk utama, Saus, Pelengkap) diatur di `detailFields` di file yang sama.
+- Data ini sengaja dipisah dari `menu.ts`, supaya file yang diedit dari HP saat acara (stok habis) tetap pendek dan mudah dicari.
+
 > Kalau menu pernah diedit lewat github.com (misalnya menandai "Habis" saat acara), jalankan `git pull` dulu sebelum mengedit di komputer, supaya perubahan dari HP tidak tertimpa.
 
 ### Cara bayar dan jadwal jualan
@@ -174,8 +187,9 @@ public/menu/            Foto menu (buat foldernya saat foto pertama masuk)
 print/                  QR code, standee A4, dan kartu meja A6 (tidak ikut build)
 scripts/                prepare-assets.mjs, print-qr.mjs, screenshots.mjs
 src/app/                layout, halaman, CSS global, favicon, ikon, manifest
-src/components/         Header, Hero, EventDate, CategoryNav, MenuSection, MenuCard, MenuImage, Footer, WhatsAppButton
+src/components/         Header, Hero, EventDate, CategoryNav, MenuSection, MenuCard, MenuImage, MenuDetail, Footer, WhatsAppButton
 src/data/menu.ts        Daftar menu, harga, dan status habis
+src/data/menu-detail.ts Isi tiap rice box untuk panel detail
 src/data/site.ts        Nama brand, WhatsApp, Instagram, cara bayar, jadwal jualan
 PANDUAN-STOK-HABIS.md   Cara menandai rasa habis dari HP saat acara
 src/lib/                Format harga, pengelompokan, link kontak, warna untuk metadata

@@ -33,10 +33,14 @@ for (const viewport of viewports) {
   const report = await page.evaluate(() => {
     const doc = document.documentElement
     const smallTargets = [...document.querySelectorAll("a, button")]
-      .map((el) => ({ text: el.textContent?.trim() || el.getAttribute("aria-label"), box: el.getBoundingClientRect() }))
+      // Card triggers stretch their hit area over the whole card, so measure the card.
+      .map((el) => ({
+        text: el.textContent?.trim() || el.getAttribute("aria-label"),
+        box: (el.matches('[aria-haspopup="dialog"]') ? el.closest("article") ?? el : el).getBoundingClientRect(),
+      }))
       .filter(({ box }) => box.width > 0 && (box.height < 44 || box.width < 44))
       .map(({ text, box }) => `${text} (${Math.round(box.width)}x${Math.round(box.height)})`)
-    const clipped = [...document.querySelectorAll("h1, h2, h3, p, span, a")]
+    const clipped = [...document.querySelectorAll("h1, h2, h3, p, span:not(.sr-only), a")]
       .filter((el) => el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow !== "visible")
       .map((el) => el.textContent?.trim())
     const firstCard = document.querySelector("#menu article")?.getBoundingClientRect()
@@ -77,17 +81,51 @@ for (const viewport of viewports) {
     if (label === "Rp25.000") await page.screenshot({ path: path.join(outDir, `${name}-filter-25k.png`) })
   }
 
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.getByRole("button", { name: /Katsu Ori/ }).click()
+  await page.waitForTimeout(500)
+  const detail = await page.evaluate(() => {
+    const dialog = document.querySelector("dialog")
+    const box = dialog?.getBoundingClientRect()
+    return {
+      open: dialog?.open ?? false,
+      title: dialog?.querySelector("h2")?.textContent,
+      rows: [...(dialog?.querySelectorAll("dt") ?? [])].map((dt) => `${dt.textContent}: ${dt.nextElementSibling?.textContent}`),
+      focused: document.activeElement?.textContent,
+      fitsWidth: box ? box.left >= 0 && box.right <= window.innerWidth : false,
+      fitsHeight: box ? box.top >= 0 && box.bottom <= window.innerHeight + 1 : false,
+      pageScrollLocked: getComputedStyle(document.documentElement).overflow === "hidden",
+    }
+  })
+  await page.screenshot({ path: path.join(outDir, `${name}-detail.png`) })
+  await page.keyboard.press("Escape")
+  await page.waitForTimeout(300)
+  const afterClose = await page.evaluate(() => ({
+    open: document.querySelector("dialog")?.open ?? false,
+    focusBack: document.activeElement?.textContent,
+  }))
+  const detailBroken =
+    !detail.open ||
+    detail.title !== "Katsu Ori" ||
+    detail.rows.length !== 4 ||
+    detail.focused !== "Tutup" ||
+    !detail.fitsWidth ||
+    !detail.fitsHeight ||
+    !detail.pageScrollLocked ||
+    afterClose.open ||
+    !afterClose.focusBack?.startsWith("Katsu Ori")
+
   const coveredHeadings = navChecks.filter((check) => check.headingTop < check.navBottom)
   const wrongActive = navChecks.filter(
     (check) =>
       check.current !== check.chip ||
       (check.chip === "Semua" ? check.visibleSections.length < 2 : check.visibleSections.length !== 1 || !check.visibleSections[0]?.includes(check.chip)),
   )
-  if (report.horizontalOverflow > 0 || report.smallTargets.length || report.clipped.length || coveredHeadings.length || wrongActive.length || errors.length) {
+  if (report.horizontalOverflow > 0 || report.smallTargets.length || report.clipped.length || coveredHeadings.length || wrongActive.length || detailBroken || errors.length) {
     failed = true
   }
 
-  console.log(JSON.stringify({ width: viewport.width, ...report, navChecks, wrongActive, errors }, null, 1))
+  console.log(JSON.stringify({ width: viewport.width, ...report, navChecks, wrongActive, detail, afterClose, detailBroken, errors }, null, 1))
   await page.close()
 }
 
