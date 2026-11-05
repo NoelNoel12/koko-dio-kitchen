@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react"
 import type { MenuItem } from "@/data/menu"
 import { detailFields, type MenuDetail } from "@/data/menu-detail"
-import { formatPrice } from "@/lib/menu"
+import { formatPrice, groupByPrice, toneClasses, type TierTone } from "@/lib/menu"
 import { MenuImage } from "@/components/MenuImage"
 
 const OpenDetail = createContext<(id: string) => void>(() => {})
@@ -18,6 +18,7 @@ export function MenuDetailProvider({ items, details, children }: ProviderProps) 
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const item = items.find((entry) => entry.id === selectedId)
+  const tone = groupByPrice(items).find((tier) => tier.price === item?.price)?.tone ?? "orange"
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -36,7 +37,9 @@ export function MenuDetailProvider({ items, details, children }: ProviderProps) 
         }}
         className="menu-sheet"
       >
-        {item ? <DetailContent item={item} detail={details[item.id] ?? {}} onClose={() => dialogRef.current?.close()} /> : null}
+        {item ? (
+          <DetailContent item={item} tone={tone} detail={details[item.id] ?? {}} onClose={() => dialogRef.current?.close()} />
+        ) : null}
       </dialog>
     </OpenDetail.Provider>
   )
@@ -44,18 +47,19 @@ export function MenuDetailProvider({ items, details, children }: ProviderProps) 
 
 type ContentProps = {
   item: MenuItem
+  tone: TierTone
   detail: MenuDetail
   onClose: () => void
 }
 
-function DetailContent({ item, detail, onClose }: ContentProps) {
+function DetailContent({ item, tone, detail, onClose }: ContentProps) {
   const soldOut = item.available === false
   const incomplete = detailFields.some(({ key }) => !detail[key]?.trim())
 
   return (
     <>
       <div className="relative">
-        <MenuImage item={item} eager tilt="left" />
+        <MenuImage item={item} eager compact tilt="left" />
         <button
           type="button"
           onClick={onClose}
@@ -75,7 +79,14 @@ function DetailContent({ item, detail, onClose }: ContentProps) {
             </span>
           ) : null}
         </div>
-        <p className="mt-1.5 text-lg font-bold tabular-nums">Rice box {formatPrice(item.price)}</p>
+        <p className="mt-2 flex items-center gap-2 text-base font-bold">
+          Rice box
+          <span
+            className={`rounded-md border-2 border-ink px-2 py-px font-display text-lg leading-snug tracking-wide tabular-nums ${toneClasses[tone]}`}
+          >
+            {formatPrice(item.price)}
+          </span>
+        </p>
         {item.description ? <p className="mt-2 leading-snug">{item.description}</p> : null}
 
         <h3 className="mt-5 font-display text-xl tracking-wide">Isi rice box</h3>

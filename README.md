@@ -22,6 +22,7 @@ Perintah lain:
 | `npm run typecheck` | Cek tipe TypeScript |
 | `npm run assets` | Buat ulang logo, favicon, ikon, dan gambar OG dari file di `assets-source/` |
 | `npm run print` | Buat ulang QR code dan file cetak di folder `print/` (lihat bagian QR code) |
+| `npm run og` | Buat ulang gambar preview link `public/og.png` (lihat bagian Gambar preview link) |
 | `npm run screenshots -- http://localhost:3000` | Screenshot di 360, 375, 390, 430, 768, 1280 px ke folder `screenshots/`, sekaligus cek horizontal scroll, ukuran target sentuh, dan filter kategori. Butuh `npx playwright install chromium` sekali. |
 
 ## Mengganti menu dan harga
@@ -162,32 +163,45 @@ Saat mencetak:
 ## Keputusan desain
 
 1. **Font**: Lilita One untuk judul, karena hurufnya bulat, gemuk, dan rapat seperti wordmark logo. Plus Jakarta Sans untuk teks, karena tetap jelas di ukuran kecil dan dirancang oleh studio tipografi Indonesia.
-2. **Gaya sticker**: semua kartu, tombol, dan label memakai border hitam 2,5 px, sudut membulat besar, dan bayangan keras 4 px tanpa blur, meniru outline logo. Skill `taste-skill` melarang bayangan dan `design-taste-frontend` melarang hitam murni. Keduanya kalah oleh palet dan gaya logo sesuai aturan prioritas brief.
-3. **Label harga sebagai stiker besar**: tiap kelompok dibuka label harga besar yang sedikit miring. Tier Rp18.000 berwarna orange, tier Rp25.000 berwarna hitam. Pembeli langsung tahu dua tingkat harga tanpa membaca nama menu.
+2. **Gaya sticker, logo apa adanya**: kartu, tombol, dan label memakai border hitam 2,5 px, sudut membulat besar, dan bayangan keras 4 px tanpa blur, meniru outline logo. Logonya sendiri selalu tampil persis seperti file aslinya, tanpa rotasi, bayangan, atau bingkai, baik di website maupun di media cetak. Skill `taste-skill` melarang bayangan dan `design-taste-frontend` melarang hitam murni. Keduanya kalah oleh palet dan gaya logo sesuai aturan prioritas brief.
+3. **Dua tier, dua warna**: tiap kelompok dibuka stiker harga besar yang sedikit miring, berisi harga dan jumlah rasa. Tier Rp18.000 orange dengan teks hitam, tier Rp25.000 hitam dengan teks orange. Warna yang sama dipakai di label harga tiap kartu dan di panel detail, jadi tier terbaca dari jauh, tidak hanya di judul section.
 4. **Grid**: di HP 2 kolom. Pada lebar 360 px kartu masih 158 px, foto tetap jelas, dan empat menu terlihat sekaligus, jadi kartu horizontal 1 kolom tidak dipakai. Tablet 3 kolom. Desktop memilih 3 atau 4 kolom otomatis supaya baris terakhir tidak bolong (6 menu jadi 3+3, 4 menu jadi 4).
 5. **Placeholder**: ilustrasi kotak rice box dengan uap, digambar sendiri dalam SVG memakai warna palet, di atas latar peach dengan label "Foto menyusul". Bukan stock photo dan bukan karakter koki. Rasio dikunci 4:3. Saran `design-taste-frontend` untuk memakai foto stok tidak diikuti karena brief melarang.
-6. **Navigasi kategori jadi filter**, bukan lompat ke section. Dengan scroll, "Semua" dan "Rp18.000" berhenti di titik yang sama dan tombolnya jadi membingungkan. Dengan filter, tiap tombol punya arti jelas. Tanpa JavaScript, tombol tetap berfungsi sebagai link ke section.
+6. **Navigasi kategori jadi filter**, bukan lompat ke section. Dengan scroll, "Semua" dan "Rp18.000" berhenti di titik yang sama dan tombolnya jadi membingungkan. Dengan filter, tiap tombol punya arti jelas. Tanpa JavaScript, tombol tetap berfungsi sebagai link ke section. Tidak ada header terpisah di atas logo besar: logo kecil baru muncul di bar kategori setelah logo hero lewat saat di-scroll, jadi layar pertama tidak menampilkan logo dua kali.
 7. **Tema terang saja**: `design-taste-frontend` menyarankan dark mode, tapi brief menetapkan tema terang supaya warna logo dan kemasan tampil apa adanya.
-8. **Gerak**: hanya satu momen masuk (logo "ditempel" seperti stiker) dan efek tekan pada tombol. Semua mati otomatis kalau HP memakai pengaturan kurangi gerak (`prefers-reduced-motion`).
+8. **Gerak**: hanya satu momen masuk (judul hero naik pelan saat halaman dibuka), efek tekan pada tombol dan kartu, panel detail yang naik dari bawah, dan logo kecil yang meluncur masuk ke bar kategori. Logo hero tidak dianimasikan. Semua gerak mati otomatis kalau HP memakai pengaturan kurangi gerak (`prefers-reduced-motion`).
 
 ## Catatan teknis
 
 - File logo sumber ternyata 20834 × 20834 px (bukan 8000) dan latarnya sudah transparan, jadi `scripts/prepare-assets.mjs` melewati flood-fill. Jalur flood-fill tetap ada dan sudah diuji: topi dan baju putih tidak ikut terhapus.
 - Favicon dan ikon memakai crop kepala karakter, karena logo penuh terlalu detail di 32 px.
 - Next.js 16 mengganti prop `priority` di `next/image` dengan `preload`. Logo hero memakai `preload`.
-- Logo kecil di header memakai file 1x/2x yang sudah dikecilkan script, jadi tidak lewat image optimizer.
+- Logo kecil di bar kategori memakai file 1x/2x yang sudah dikecilkan script, jadi tidak lewat image optimizer.
+- `npm run print` dan `npm run og` membaca langsung `menu.ts` dan `site.ts`, jadi butuh Node.js 22.18 atau lebih baru (yang bisa menjalankan file TypeScript tanpa build). Website sendiri cukup Node 20.9.
+
+## Gambar preview link
+
+`public/og.png` adalah gambar yang muncul saat link situs dibagikan di WhatsApp, Instagram, atau media sosial lain. Isinya logo, "Rice box mulai Rp18.000", jumlah rasa, cara bayar, tanggal jualan, dan `bit.ly/kokodiokitchen`, semuanya dibaca dari `menu.ts` dan `site.ts`.
+
+Buat ulang setiap kali harga, cara bayar, atau jadwal jualan berubah:
+
+```bash
+npm run og
+```
+
+Gambar ini statis. Berbeda dengan website, tanggal di gambar preview tidak hilang sendiri setelah acara lewat. Jalankan `npm run og` lagi setelah tanggal 27 November (tanggal yang sudah lewat otomatis tidak dicantumkan), lalu commit dan push. WhatsApp kadang menyimpan preview lama beberapa hari, jadi perubahan gambar ini bisa terlambat terlihat di sana.
 
 ## Struktur folder
 
 ```
 assets-source/          Logo resolusi penuh (tidak ikut build)
-public/brand/           Logo hero dan header hasil script
-public/og.png           Gambar preview saat link dibagikan
+public/brand/           Logo besar dan logo kecil hasil script
+public/og.png           Gambar preview saat link dibagikan (npm run og)
 public/menu/            Foto menu (buat foldernya saat foto pertama masuk)
 print/                  QR code, standee A4, dan kartu meja A6 (tidak ikut build)
-scripts/                prepare-assets.mjs, print-qr.mjs, screenshots.mjs
+scripts/                prepare-assets.mjs, print-qr.mjs, og-image.mjs, brand-html.mjs, screenshots.mjs
 src/app/                layout, halaman, CSS global, favicon, ikon, manifest
-src/components/         Header, Hero, EventDate, CategoryNav, MenuSection, MenuCard, MenuImage, MenuDetail, Footer, WhatsAppButton
+src/components/         Hero, EventDate, CategoryNav, MenuSection, MenuCard, MenuImage, MenuDetail, Footer, WhatsAppButton
 src/data/menu.ts        Daftar menu, harga, dan status habis
 src/data/menu-detail.ts Isi tiap rice box untuk panel detail
 src/data/site.ts        Nama brand, WhatsApp, Instagram, cara bayar, jadwal jualan

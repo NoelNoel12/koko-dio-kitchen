@@ -41,7 +41,7 @@ for (const viewport of viewports) {
       .filter(({ box }) => box.width > 0 && (box.height < 44 || box.width < 44))
       .map(({ text, box }) => `${text} (${Math.round(box.width)}x${Math.round(box.height)})`)
     const clipped = [...document.querySelectorAll("h1, h2, h3, p, span:not(.sr-only), a")]
-      .filter((el) => el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow !== "visible")
+      .filter((el) => el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow !== "visible" && getComputedStyle(el).visibility !== "hidden")
       .map((el) => el.textContent?.trim())
     const firstCard = document.querySelector("#menu article")?.getBoundingClientRect()
     return {
@@ -56,6 +56,16 @@ for (const viewport of viewports) {
       ]),
     }
   })
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2))
+  await page.waitForTimeout(400)
+  const navLogo = await page.evaluate(() => {
+    const link = document.querySelector('nav a[href="#top"]')
+    const box = link?.getBoundingClientRect()
+    return { shown: link?.getAttribute("data-shown") === "true", width: Math.round(box?.width ?? 0), height: Math.round(box?.height ?? 0) }
+  })
+  await page.screenshot({ path: path.join(outDir, `${name}-scrolled.png`) })
+  const navLogoBroken = !navLogo.shown || navLogo.width < 44 || navLogo.height < 44
 
   // Scroll deep first so every filter tap has to bring the menu back under the sticky nav.
   const navChecks = []
@@ -121,11 +131,11 @@ for (const viewport of viewports) {
       check.current !== check.chip ||
       (check.chip === "Semua" ? check.visibleSections.length < 2 : check.visibleSections.length !== 1 || !check.visibleSections[0]?.includes(check.chip)),
   )
-  if (report.horizontalOverflow > 0 || report.smallTargets.length || report.clipped.length || coveredHeadings.length || wrongActive.length || detailBroken || errors.length) {
+  if (report.horizontalOverflow > 0 || report.smallTargets.length || report.clipped.length || coveredHeadings.length || wrongActive.length || detailBroken || navLogoBroken || errors.length) {
     failed = true
   }
 
-  console.log(JSON.stringify({ width: viewport.width, ...report, navChecks, wrongActive, detail, afterClose, detailBroken, errors }, null, 1))
+  console.log(JSON.stringify({ width: viewport.width, ...report, navChecks, wrongActive, navLogo, detail, afterClose, detailBroken, errors }, null, 1))
   await page.close()
 }
 

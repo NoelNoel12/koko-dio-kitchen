@@ -5,12 +5,16 @@ type Props = {
   item: MenuItem
   eager?: boolean
   tilt: "left" | "right"
+  compact?: boolean
 }
 
 // Rasio dikunci 4:3 supaya foto asli nanti tidak menggeser layout.
-export function MenuImage({ item, eager = false, tilt }: Props) {
+// `compact` hanya memendekkan placeholder; foto asli selalu tampil 4:3.
+export function MenuImage({ item, eager = false, tilt, compact = false }: Props) {
+  const ratio = compact && !item.image ? "aspect-[5/2]" : "aspect-[4/3]"
+
   return (
-    <div className="relative aspect-[4/3] overflow-hidden border-b-[2.5px] border-ink bg-peach">
+    <div className={`relative ${ratio} overflow-hidden border-b-[2.5px] border-ink bg-peach`}>
       {item.image ? (
         <Image
           src={item.image}

@@ -1,8 +1,11 @@
 import type { MenuItem } from "@/data/menu"
 
+export type TierTone = "orange" | "ink"
+
 export type PriceTier = {
   id: string
   price: number
+  tone: TierTone
   items: MenuItem[]
 }
 
@@ -19,5 +22,16 @@ export function groupByPrice(items: MenuItem[]): PriceTier[] {
   }
   return [...tiers.entries()]
     .sort(([a], [b]) => a - b)
-    .map(([price, tierItems]) => ({ id: `harga-${price}`, price, items: tierItems }))
+    .map(([price, tierItems], index) => ({
+      id: `harga-${price}`,
+      price,
+      tone: index % 2 === 0 ? "orange" : "ink",
+      items: tierItems,
+    }))
+}
+
+// Price chips and tags share these so a tier reads the same everywhere on the page.
+export const toneClasses: Record<TierTone, string> = {
+  orange: "bg-orange text-ink",
+  ink: "bg-ink text-orange",
 }

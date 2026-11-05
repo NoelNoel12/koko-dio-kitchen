@@ -171,13 +171,7 @@ async function main() {
   await writeFile(path.join(appDir, "apple-icon.png"), await square(180, CREAM))
   await writeFile(path.join(appDir, "icon.png"), await square(512, CREAM))
 
-  const ogLogo = await sharp(logo).resize({ height: 540 }).png().toBuffer()
-  await sharp({ create: { width: 1200, height: 630, channels: 4, background: CREAM } })
-    .composite([{ input: ogLogo, gravity: "center" }])
-    .png({ compressionLevel: 9, palette: true, quality: 90 })
-    .toFile(path.join(publicDir, "og.png"))
-
-  console.log("Aset selesai dibuat.")
+  console.log("Aset selesai dibuat. Gambar preview link dibuat terpisah dengan npm run og.")
 }
 
 main().catch((error) => {

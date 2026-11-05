@@ -5,24 +5,27 @@ import { formatPrice } from "@/lib/menu"
 import { EventDate } from "@/components/EventDate"
 import { WhatsAppButton } from "@/components/WhatsAppButton"
 
+export const HERO_LOGO_ID = "hero-logo"
+
 export function Hero() {
   const cheapest = Math.min(...menu.map((item) => item.price))
 
   return (
-    <section
-      aria-labelledby="hero-title"
-      className="page-gutter mx-auto grid w-full max-w-[1100px] grid-cols-[minmax(0,5fr)_minmax(0,6fr)] items-center gap-x-4 pt-2 pb-6 sm:grid-cols-[minmax(0,4fr)_minmax(0,6fr)] sm:gap-x-10 sm:pb-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,7fr)] lg:pb-10"
+    <header
+      id="top"
+      className="page-gutter mx-auto grid w-full max-w-[1100px] grid-cols-[minmax(0,5fr)_minmax(0,6fr)] items-center gap-x-4 pt-[max(1.25rem,env(safe-area-inset-top))] pb-6 sm:grid-cols-[minmax(0,4fr)_minmax(0,6fr)] sm:gap-x-10 sm:pt-8 sm:pb-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,7fr)] lg:pb-10"
     >
       <Image
+        id={HERO_LOGO_ID}
         src="/brand/logo-hero.webp"
         alt={`Logo ${site.name}: koki tersenyum mengacungkan jempol sambil memegang spatula`}
         width={900}
         height={1325}
         preload
         sizes="(min-width: 1024px) 230px, (min-width: 640px) 30vw, 42vw"
-        className="hero-logo mx-auto h-auto max-h-[min(44dvh,340px)] w-auto sm:row-span-2"
+        className="mx-auto h-auto max-h-[min(44dvh,340px)] w-auto sm:row-span-2"
       />
-      <div className="min-w-0 sm:self-end">
+      <div className="hero-enter min-w-0 sm:self-end">
         <h1
           id="hero-title"
           className="max-w-[11ch] font-display text-[clamp(1.75rem,8.4vw,6rem)] leading-[0.95] tracking-[-0.01em] text-balance"
@@ -46,6 +49,6 @@ export function Hero() {
           <WhatsAppButton />
         </div>
       </div>
-    </section>
+    </header>
   )
 }

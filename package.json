@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "assets": "node scripts/prepare-assets.mjs",
     "screenshots": "node scripts/screenshots.mjs",
-    "print": "node scripts/print-qr.mjs"
+    "print": "node scripts/print-qr.mjs",
+    "og": "node scripts/og-image.mjs"
   },
   "engines": {
     "node": ">=20.9.0"

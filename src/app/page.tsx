@@ -1,12 +1,11 @@
 import { menu } from "@/data/menu"
 import { menuDetail } from "@/data/menu-detail"
-import { MenuDetailProvider } from "@/components/MenuDetail"
 import { formatPrice, groupByPrice } from "@/lib/menu"
 import { CategoryNav } from "@/components/CategoryNav"
-import { Hero } from "@/components/Hero"
+import { Hero, HERO_LOGO_ID } from "@/components/Hero"
+import { MenuDetailProvider } from "@/components/MenuDetail"
 import { MenuSection } from "@/components/MenuSection"
 import { SiteFooter } from "@/components/SiteFooter"
-import { SiteHeader } from "@/components/SiteHeader"
 
 const ABOVE_FOLD_CARDS = 4
 
@@ -20,19 +19,13 @@ export default function Home() {
 
   return (
     <>
-      <SiteHeader />
+      <Hero />
       <main>
-        <Hero />
-        <CategoryNav categories={categories} menuId="menu" />
+        <CategoryNav categories={categories} menuId="menu" heroLogoId={HERO_LOGO_ID} />
         <MenuDetailProvider items={menu} details={menuDetail}>
           <div id="menu" className="page-gutter mx-auto w-full max-w-[1100px]">
             {tiers.map((tier, index) => (
-              <MenuSection
-                key={tier.id}
-                tier={tier}
-                variant={index % 2 === 0 ? "orange" : "ink"}
-                eagerCount={index === 0 ? ABOVE_FOLD_CARDS : 0}
-              />
+              <MenuSection key={tier.id} tier={tier} eagerCount={index === 0 ? ABOVE_FOLD_CARDS : 0} />
             ))}
           </div>
         </MenuDetailProvider>
