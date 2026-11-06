@@ -47,7 +47,7 @@ export function MenuSection({ tier, layout, eagerCount }: Props) {
         {tier.items.map((item, index) => (
           <li key={item.id} className="scroll-reveal">
             {layout === "list" ? (
-              <MenuRow item={item} tone={tier.tone} />
+              <MenuRow item={item} tone={tier.tone} index={index} />
             ) : (
               <MenuCard item={item} tone={tier.tone} index={index} eager={index < eagerCount} />
             )}

@@ -14,7 +14,8 @@ const viewports = [
 ]
 
 await mkdir(outDir, { recursive: true })
-const browser = await chromium.launch()
+// Real scrollbars, so a page that jumps sideways when the dialog locks scrolling is caught.
+const browser = await chromium.launch({ ignoreDefaultArgs: ["--hide-scrollbars"] })
 let failed = false
 
 for (const viewport of viewports) {
@@ -84,6 +85,18 @@ for (const viewport of viewports) {
   const navChecks = []
   for (const label of ["Rp25.000", "Rp18.000", "Semua"]) {
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    // Sample every frame after the tap to catch a section that lingers on screen before hiding.
+    await page.evaluate(() => {
+      window.__shown = []
+      let frames = 0
+      const sample = () => {
+        window.__shown.push(
+          [...document.querySelectorAll("#menu > section")].filter((s) => getComputedStyle(s).display !== "none").length,
+        )
+        if (++frames < 45) requestAnimationFrame(sample)
+      }
+      requestAnimationFrame(sample)
+    })
     await page.getByRole("link", { name: label, exact: true }).click()
     await page.waitForTimeout(1500)
     navChecks.push(
@@ -91,8 +104,10 @@ for (const viewport of viewports) {
         const nav = document.querySelector("nav")?.getBoundingClientRect()
         const visible = [...document.querySelectorAll("#menu > section")].filter((s) => !s.hidden)
         const heading = visible[0]?.querySelector("h2")?.getBoundingClientRect()
+        const afterTap = window.__shown.slice(window.__shown.findIndex((count) => count !== window.__shown[0]) + 1)
         return {
           chip,
+          maxShownAfterTap: chip === "Semua" ? null : Math.max(...(afterTap.length ? afterTap : window.__shown.slice(-5))),
           current: document.querySelector('nav [aria-current="true"]')?.textContent,
           visibleSections: visible.map((s) => s.querySelector("h2")?.textContent),
           status: document.querySelector('nav [role="status"]')?.textContent,
@@ -105,12 +120,14 @@ for (const viewport of viewports) {
   }
 
   await page.evaluate(() => window.scrollTo(0, 0))
+  const menuLeftBefore = await page.evaluate(() => document.getElementById("menu")?.getBoundingClientRect().left)
   await page.getByRole("button", { name: /Katsu Ori/ }).click()
   await page.waitForTimeout(500)
-  const detail = await page.evaluate(() => {
+  const detail = await page.evaluate((leftBefore) => {
     const dialog = document.querySelector("dialog")
     const box = dialog?.getBoundingClientRect()
     return {
+      pageShift: Math.round((document.getElementById("menu")?.getBoundingClientRect().left ?? 0) - (leftBefore ?? 0)),
       open: dialog?.open ?? false,
       title: dialog?.querySelector("h2")?.textContent,
       rows: [...(dialog?.querySelectorAll("dt") ?? [])].map((dt) => `${dt.textContent}: ${dt.nextElementSibling?.textContent}`),
@@ -119,7 +136,7 @@ for (const viewport of viewports) {
       fitsHeight: box ? box.top >= 0 && box.bottom <= window.innerHeight + 1 : false,
       pageScrollLocked: getComputedStyle(document.documentElement).overflow === "hidden",
     }
-  })
+  }, menuLeftBefore)
   await page.screenshot({ path: path.join(outDir, `${name}-detail.png`) })
   await page.keyboard.press("Escape")
   await page.waitForTimeout(300)
@@ -135,8 +152,27 @@ for (const viewport of viewports) {
     !detail.fitsWidth ||
     !detail.fitsHeight ||
     !detail.pageScrollLocked ||
+    detail.pageShift !== 0 ||
     afterClose.open ||
     !afterClose.focusBack?.startsWith("Katsu Ori")
+
+  const filterGlitch = navChecks.filter((check) => check.maxShownAfterTap !== null && check.maxShownAfterTap > 1)
+
+  // The ticker must stay wider than the screen at every point of its loop, and the footer logo must be whole.
+  const extras = await page.evaluate(() => {
+    const track = document.querySelector(".ticker-track")
+    const half = track?.firstElementChild?.getBoundingClientRect().width ?? 0
+    const logo = document.querySelector('footer img[alt^="Logo"]')
+    const box = logo?.getBoundingClientRect()
+    const natural = logo ? logo.naturalWidth / logo.naturalHeight : 0
+    return {
+      tickerHalfWidth: Math.round(half),
+      tickerCoversScreen: half >= window.innerWidth,
+      footerLogoRatioOk: box ? Math.abs(box.width / box.height - natural) < 0.02 : false,
+      footerLogoInside: box ? box.left >= 0 && box.right <= window.innerWidth : false,
+    }
+  })
+  const extrasBroken = !extras.tickerCoversScreen || !extras.footerLogoRatioOk || !extras.footerLogoInside
 
   const coveredHeadings = navChecks.filter((check) => check.headingTop < check.navBottom)
   const wrongActive = navChecks.filter(
@@ -144,11 +180,11 @@ for (const viewport of viewports) {
       check.current !== check.chip ||
       (check.chip === "Semua" ? check.visibleSections.length < 2 : check.visibleSections.length !== 1 || !check.visibleSections[0]?.includes(check.chip)),
   )
-  if (report.horizontalOverflow > 0 || report.smallTargets.length || report.clipped.length || coveredHeadings.length || wrongActive.length || detailBroken || navLogoBroken || hiddenInView.length || errors.length) {
+  if (report.horizontalOverflow > 0 || report.smallTargets.length || report.clipped.length || coveredHeadings.length || wrongActive.length || detailBroken || navLogoBroken || hiddenInView.length || filterGlitch.length || extrasBroken || errors.length) {
     failed = true
   }
 
-  console.log(JSON.stringify({ width: viewport.width, ...report, navChecks, wrongActive, navLogo, hiddenInView, detail, afterClose, detailBroken, errors }, null, 1))
+  console.log(JSON.stringify({ width: viewport.width, ...report, navChecks, wrongActive, filterGlitch, extras, navLogo, hiddenInView, detail, afterClose, detailBroken, errors }, null, 1))
   await page.close()
 }
 

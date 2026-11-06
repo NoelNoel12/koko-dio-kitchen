@@ -20,7 +20,7 @@ export function MenuCard({ item, tone, index, eager }: Props) {
       }`}
     >
       <div className={soldOut ? "opacity-55 grayscale" : undefined}>
-        <MenuImage item={item} eager={eager} tilt={index % 2 === 0 ? "left" : "right"} />
+        <MenuImage item={item} variant="card" eager={eager} tilt={index % 2 === 0 ? "left" : "right"} />
       </div>
       <div className="flex flex-1 flex-col gap-1 px-3 pt-2.5 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
         <h3 className="font-display text-[1.2rem] leading-[1.05] tracking-wide text-balance sm:text-[1.35rem]">

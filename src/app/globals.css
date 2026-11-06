@@ -27,6 +27,8 @@
 }
 
 html {
+  /* Keeps the page from jumping sideways when the detail panel locks scrolling and the scrollbar hides. */
+  scrollbar-gutter: stable;
   background: var(--color-cream);
   color: var(--color-ink);
   -webkit-text-size-adjust: 100%;
@@ -255,7 +257,8 @@ html:has(dialog[open]) {
 
 @utility ticker-track {
   @media (prefers-reduced-motion: no-preference) {
-    animation: ticker 34s linear infinite;
+    /* Four rounds of names per half, about 40px per second. */
+    animation: ticker 136s linear infinite;
   }
 }
 
@@ -275,12 +278,14 @@ html:has(dialog[open]) {
     }
   }
 
-  /* A section shown again by the price filter slides back in instead of popping. */
+  /*
+    A section shown again by the price filter slides back in instead of popping.
+    Hiding stays instant: transitioning display would keep the old section on screen for a moment.
+  */
   .menu-section {
     transition:
       opacity 280ms ease-out,
-      translate 340ms var(--ease-snap),
-      display 340ms allow-discrete;
+      translate 340ms var(--ease-snap);
 
     @starting-style {
       opacity: 0;

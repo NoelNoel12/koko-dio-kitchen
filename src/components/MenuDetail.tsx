@@ -59,7 +59,7 @@ function DetailContent({ item, tone, detail, onClose }: ContentProps) {
   return (
     <>
       <div className="relative">
-        <MenuImage item={item} eager compact tilt="left" />
+        <MenuImage item={item} variant="sheet" eager tilt="left" />
         <button
           type="button"
           onClick={onClose}
