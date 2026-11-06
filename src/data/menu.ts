@@ -11,7 +11,7 @@ export type MenuItem = {
 // Stok habis: ganti `available: true` menjadi `available: false`. Stok ada lagi: kembalikan ke `true`.
 // Foto: taruh file di public/menu/<id>.jpg lalu tambahkan `image: "/menu/<id>.jpg"`.
 export const menu: MenuItem[] = [
-  { id: "katsu-ori", name: "Katsu Ori", price: 18000, available: true },
+  { id: "katsu-ori", name: "Katsu Ori", price: 18000, available: false },
   { id: "bbq", name: "BBQ", price: 18000, available: true },
   { id: "teriyaki", name: "Teriyaki", price: 18000, available: true },
   { id: "cabe-garam", name: "Cabe Garam", price: 18000, available: true },
