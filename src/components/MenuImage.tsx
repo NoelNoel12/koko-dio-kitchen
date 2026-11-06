@@ -43,7 +43,7 @@ function RiceBoxPlaceholder({ tilt }: { tilt: "left" | "right" }) {
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M50 8c-4 4 4 7 0 11M60 4c-4 5 4 8 0 13M70 8c-4 4 4 7 0 11" strokeWidth="3" />
+        <path className="steam" d="M50 8c-4 4 4 7 0 11M60 4c-4 5 4 8 0 13M70 8c-4 4 4 7 0 11" strokeWidth="3" />
         <path d="M24 44c2-12 16-20 36-20s34 8 36 20" fill="var(--color-paper)" />
         <path d="M42 36l4-2M55 31l3 2M70 34l4-1M62 39l3-2M49 40l3 1" strokeWidth="2.5" />
         <path d="M14 44h92l-9 34H23z" fill="var(--color-orange)" />

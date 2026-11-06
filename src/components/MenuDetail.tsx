@@ -91,10 +91,14 @@ function DetailContent({ item, tone, detail, onClose }: ContentProps) {
 
         <h3 className="mt-5 font-display text-xl tracking-wide">Isi rice box</h3>
         <dl className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2.5">
-          {detailFields.map(({ key, label }) => {
+          {detailFields.map(({ key, label }, index) => {
             const value = detail[key]?.trim()
             return (
-              <div key={key} className="col-span-2 grid grid-cols-subgrid items-baseline">
+              <div
+                key={key}
+                style={{ "--i": index } as React.CSSProperties}
+                className="detail-row col-span-2 grid grid-cols-subgrid items-baseline"
+              >
                 <dt className="font-bold">{label}</dt>
                 <dd>
                   {value ? (

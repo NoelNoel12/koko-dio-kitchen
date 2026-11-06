@@ -83,7 +83,7 @@ export function CategoryNav({ categories, menuId, heroLogoId }: Props) {
                   href={`#${item.id === ALL ? menuId : item.id}`}
                   aria-current={isActive ? "true" : undefined}
                   onClick={(event) => select(event, item.id)}
-                  className={`press flex min-h-11 w-full items-center justify-center rounded-[var(--radius-chip)] border-[2.5px] border-ink px-1.5 font-display text-[clamp(0.95rem,4.3vw,1.05rem)] leading-none tracking-wide whitespace-nowrap shadow-[var(--shadow-sticker)] sm:px-5 sm:text-lg ${
+                  className={`chip press flex min-h-11 w-full items-center justify-center rounded-[var(--radius-chip)] border-[2.5px] border-ink px-1.5 font-display text-[clamp(0.95rem,4.3vw,1.05rem)] leading-none tracking-wide whitespace-nowrap shadow-[var(--shadow-sticker)] sm:px-5 sm:text-lg ${
                     isActive ? "bg-orange hover:bg-orange-deep" : "bg-paper hover:bg-peach"
                   }`}
                 >

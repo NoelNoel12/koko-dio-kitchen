@@ -57,6 +57,19 @@ for (const viewport of viewports) {
     }
   })
 
+  // Scroll-linked entrances start at opacity 0, so prove every item and sticker ends fully visible in view.
+  const hiddenInView = []
+  const revealed = await page.locator(".scroll-reveal, .sticker-slap").all()
+  for (const element of revealed) {
+    await element.evaluate((el) => el.scrollIntoView({ block: "center" }))
+    await page.waitForTimeout(60)
+    const opacity = await element.evaluate((el) => Number(getComputedStyle(el).opacity))
+    if (opacity < 0.98) hiddenInView.push(`${(await element.innerText()).split("\n")[0]} (${opacity.toFixed(2)})`)
+  }
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+  await page.waitForTimeout(300)
+  await page.screenshot({ path: path.join(outDir, `${name}-footer.png`) })
+
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2))
   await page.waitForTimeout(400)
   const navLogo = await page.evaluate(() => {
@@ -131,11 +144,11 @@ for (const viewport of viewports) {
       check.current !== check.chip ||
       (check.chip === "Semua" ? check.visibleSections.length < 2 : check.visibleSections.length !== 1 || !check.visibleSections[0]?.includes(check.chip)),
   )
-  if (report.horizontalOverflow > 0 || report.smallTargets.length || report.clipped.length || coveredHeadings.length || wrongActive.length || detailBroken || navLogoBroken || errors.length) {
+  if (report.horizontalOverflow > 0 || report.smallTargets.length || report.clipped.length || coveredHeadings.length || wrongActive.length || detailBroken || navLogoBroken || hiddenInView.length || errors.length) {
     failed = true
   }
 
-  console.log(JSON.stringify({ width: viewport.width, ...report, navChecks, wrongActive, navLogo, detail, afterClose, detailBroken, errors }, null, 1))
+  console.log(JSON.stringify({ width: viewport.width, ...report, navChecks, wrongActive, navLogo, hiddenInView, detail, afterClose, detailBroken, errors }, null, 1))
   await page.close()
 }
 

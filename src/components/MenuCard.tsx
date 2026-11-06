@@ -39,7 +39,7 @@ export function MenuCard({ item, tone, index, eager }: Props) {
         </div>
       </div>
       {soldOut ? (
-        <p className="pointer-events-none absolute top-2.5 right-2.5 rotate-6 rounded-lg border-[2.5px] border-ink bg-orange px-2.5 py-0.5 font-display text-base tracking-wide shadow-[var(--shadow-sticker)]">
+        <p className="sticker-slap pointer-events-none absolute top-2.5 right-2.5 rotate-6 rounded-lg border-[2.5px] border-ink bg-orange px-2.5 py-0.5 font-display text-base tracking-wide shadow-[var(--shadow-sticker)]">
           Habis
         </p>
       ) : null}

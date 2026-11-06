@@ -170,6 +170,8 @@ async function main() {
   await writeFile(path.join(appDir, "favicon.ico"), buildIco(icoPngs))
   await writeFile(path.join(appDir, "apple-icon.png"), await square(180, CREAM))
   await writeFile(path.join(appDir, "icon.png"), await square(512, CREAM))
+  await sharp(head).resize(240, 240).webp({ quality: 88, alphaQuality: 90 })
+    .toFile(path.join(publicDir, "brand", "logo-head.webp"))
 
   console.log("Aset selesai dibuat. Gambar preview link dibuat terpisah dengan npm run og.")
 }

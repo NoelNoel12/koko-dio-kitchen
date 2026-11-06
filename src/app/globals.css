@@ -182,21 +182,123 @@ html:has(dialog[open]) {
   }
 }
 
+/*
+  Motion layer. Every rule is gated by prefers-reduced-motion and animates only
+  opacity and transforms. The logo is never animated.
+*/
 @keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    translate: 0 16px;
   }
 
   to {
     opacity: 1;
+    translate: none;
+  }
+}
+
+/* Scroll-linked keyframes move but never fade, so text at the screen edge keeps full contrast. */
+@keyframes slide-in {
+  from {
+    translate: 0 28px;
+    scale: 0.97;
+  }
+
+  to {
+    translate: none;
+    scale: 1;
+  }
+}
+
+@keyframes sticker-in {
+  from {
+    scale: 0.7;
+    transform: rotate(-9deg);
+  }
+
+  65% {
+    scale: 1.06;
+  }
+
+  to {
+    scale: 1;
     transform: none;
+  }
+}
+
+@keyframes pop {
+  40% {
+    scale: 1.08;
+  }
+}
+
+@keyframes steam {
+  50% {
+    translate: 0 -4px;
+    opacity: 0.4;
+  }
+}
+
+@keyframes ticker {
+  to {
+    translate: -50% 0;
   }
 }
 
 @utility hero-enter {
   @media (prefers-reduced-motion: no-preference) {
-    animation: rise-in 420ms var(--ease-snap) both;
+    animation: rise-in 560ms var(--ease-snap) both;
+    animation-delay: calc(var(--i, 0) * 90ms + 80ms);
+  }
+}
+
+@utility ticker-track {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: ticker 34s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Scroll-linked entrances only where the browser supports view timelines. */
+  @supports (animation-timeline: view()) {
+    .scroll-reveal {
+      animation: slide-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+
+    .sticker-slap {
+      animation: sticker-in linear both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 85%;
+    }
+  }
+
+  /* A section shown again by the price filter slides back in instead of popping. */
+  .menu-section {
+    transition:
+      opacity 280ms ease-out,
+      translate 340ms var(--ease-snap),
+      display 340ms allow-discrete;
+
+    @starting-style {
+      opacity: 0;
+      translate: 0 18px;
+    }
+  }
+
+  .chip[aria-current="true"] {
+    animation: pop 300ms var(--ease-snap);
+  }
+
+  .menu-sheet[open] .detail-row {
+    animation: rise-in 380ms var(--ease-snap) both;
+    animation-delay: calc(var(--i, 0) * 55ms + 140ms);
+  }
+
+  .menu-sheet .steam {
+    animation: steam 2.2s ease-in-out infinite;
   }
 }
 

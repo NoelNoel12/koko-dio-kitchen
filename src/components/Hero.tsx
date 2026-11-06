@@ -25,19 +25,25 @@ export function Hero() {
         sizes="(min-width: 1024px) 230px, (min-width: 640px) 30vw, 42vw"
         className="mx-auto h-auto max-h-[min(44dvh,340px)] w-auto sm:row-span-2"
       />
-      <div className="hero-enter min-w-0 sm:self-end">
+      <div className="min-w-0 sm:self-end">
         <h1
           id="hero-title"
-          className="max-w-[11ch] font-display text-[clamp(1.75rem,8.4vw,6rem)] leading-[0.95] tracking-[-0.01em] text-balance"
+          className="hero-enter max-w-[11ch] font-display text-[clamp(1.75rem,8.4vw,6rem)] leading-[0.95] tracking-[-0.01em] text-balance"
         >
           Mau rice box rasa apa?
         </h1>
-        <p className="mt-3 max-w-[30ch] text-[clamp(0.95rem,3.9vw,1.375rem)] leading-snug font-medium sm:mt-5">
+        <p
+          style={{ "--i": 1 } as React.CSSProperties}
+          className="hero-enter mt-3 max-w-[30ch] text-[clamp(0.95rem,3.9vw,1.375rem)] leading-snug font-medium sm:mt-5"
+        >
           {menu.length} rasa, mulai {formatPrice(cheapest)}.
         </p>
       </div>
       <div className="col-span-2 mt-5 flex flex-col gap-4 sm:col-span-1 sm:col-start-2 sm:mt-0 sm:self-start sm:pt-6">
-        <div className="space-y-1 text-[0.95rem] leading-snug sm:text-base">
+        <div
+          style={{ "--i": 2 } as React.CSSProperties}
+          className="hero-enter space-y-1 text-[0.95rem] leading-snug sm:text-base"
+        >
           {site.event.date ? <EventDate date={site.event.date} place={site.event.place} /> : null}
           {site.payment.length > 0 ? (
             <p>

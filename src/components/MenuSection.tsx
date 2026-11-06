@@ -1,9 +1,13 @@
 import type { PriceTier } from "@/lib/menu"
 import { formatPrice, toneClasses } from "@/lib/menu"
 import { MenuCard } from "@/components/MenuCard"
+import { MenuRow } from "@/components/MenuRow"
+
+export type MenuLayout = "list" | "grid"
 
 type Props = {
   tier: PriceTier
+  layout: MenuLayout
   eagerCount: number
 }
 
@@ -18,14 +22,18 @@ function desktopColumns(count: number) {
   return gaps(3) < gaps(4) ? "lg:grid-cols-3" : "lg:grid-cols-4"
 }
 
-export function MenuSection({ tier, eagerCount }: Props) {
+export function MenuSection({ tier, layout, eagerCount }: Props) {
   const style = tagStyles[tier.tone]
   const headingId = `${tier.id}-judul`
+  const listClasses =
+    layout === "list"
+      ? "grid gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-5"
+      : `grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:gap-6 ${desktopColumns(tier.items.length)}`
 
   return (
-    <section id={tier.id} aria-labelledby={headingId} className="pt-8 pb-6 sm:pt-10 sm:pb-10">
+    <section id={tier.id} aria-labelledby={headingId} className="menu-section pt-8 pb-6 sm:pt-10 sm:pb-10">
       <div
-        className={`mb-6 inline-flex flex-col rounded-[var(--radius-sticker)] border-[2.5px] border-ink px-4 pt-2 pb-2.5 shadow-[var(--shadow-sticker-lg)] sm:mb-8 sm:px-6 sm:pt-3 sm:pb-3 ${toneClasses[tier.tone]} ${style.tilt}`}
+        className={`sticker-slap mb-6 inline-flex flex-col rounded-[var(--radius-sticker)] border-[2.5px] border-ink px-4 pt-2 pb-2.5 shadow-[var(--shadow-sticker-lg)] sm:mb-8 sm:px-6 sm:pt-3 sm:pb-3 ${toneClasses[tier.tone]} ${style.tilt}`}
       >
         <h2 id={headingId} className="flex flex-col">
           <span className={`text-sm font-bold sm:text-base ${style.small}`}>Rice box</span>
@@ -35,10 +43,14 @@ export function MenuSection({ tier, eagerCount }: Props) {
         </h2>
         <p className={`mt-1 text-sm font-bold sm:text-base ${style.small}`}>{tier.items.length} rasa</p>
       </div>
-      <ul className={`grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:gap-6 ${desktopColumns(tier.items.length)}`}>
+      <ul className={listClasses}>
         {tier.items.map((item, index) => (
-          <li key={item.id}>
-            <MenuCard item={item} tone={tier.tone} index={index} eager={index < eagerCount} />
+          <li key={item.id} className="scroll-reveal">
+            {layout === "list" ? (
+              <MenuRow item={item} tone={tier.tone} />
+            ) : (
+              <MenuCard item={item} tone={tier.tone} index={index} eager={index < eagerCount} />
+            )}
           </li>
         ))}
       </ul>
