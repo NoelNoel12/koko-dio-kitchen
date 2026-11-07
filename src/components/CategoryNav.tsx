@@ -41,26 +41,23 @@ export function CategoryNav({ categories, menuId, heroLogoId }: Props) {
     const navBottom = event.currentTarget.closest("nav")?.getBoundingClientRect().bottom ?? 0
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
+    const needsScroll = menu.getBoundingClientRect().top < navBottom - 1 || id !== ALL
+
     // flushSync keeps the DOM change inside the view transition callback, so old and new states are captured.
-    const apply = () => {
+    const apply = (behavior: ScrollBehavior) => {
       for (const section of menu.querySelectorAll<HTMLElement>(":scope > section")) {
         section.hidden = id !== ALL && section.id !== id
       }
       flushSync(() => setActive(id))
-    }
-
-    const scrollToMenu = () => {
-      if (menu.getBoundingClientRect().top < navBottom - 1 || id !== ALL) {
-        menu.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" })
-      }
+      if (needsScroll) menu.scrollIntoView({ behavior, block: "start" })
     }
 
     if (document.startViewTransition && !reduceMotion) {
-      // Scroll after the morph so the page does not move under the transition snapshot.
-      document.startViewTransition(apply).finished.then(scrollToMenu, scrollToMenu)
+      // The jump to the menu happens inside the transition, so the morph itself carries the rows to their
+      // final place in one move instead of morphing first and scrolling afterwards.
+      document.startViewTransition(() => apply("instant"))
     } else {
-      apply()
-      scrollToMenu()
+      apply(reduceMotion ? "auto" : "smooth")
     }
 
     const picked = items.find((item) => item.id === id)

@@ -217,7 +217,8 @@ for (const viewport of viewports) {
     return { navBottom: Math.round(nav?.bottom ?? 0), stickerTop: Math.round(holder?.top ?? 0), scale }
   })
   await page.screenshot({ path: path.join(outDir, `${name}-sticky.png`) })
-  const stickyBroken = Math.abs(sticky.stickerTop - sticky.navBottom - 8) > 4 || sticky.scale !== "0.6"
+  const stickyBroken =
+    Math.abs(sticky.stickerTop - sticky.navBottom - 8) > 4 || sticky.scale !== (viewport.width >= 640 ? "0.6" : "0.5")
 
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
   await page.waitForTimeout(300)

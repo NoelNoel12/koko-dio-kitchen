@@ -181,7 +181,7 @@ export function MenuDetailProvider({ items, details, children }: ProviderProps) 
                 ref={contentRef}
                 className={direction === "next" ? "sheet-enter-next" : direction === "prev" ? "sheet-enter-prev" : ""}
               >
-                <DetailContent item={item} tone={tone} detail={details[item.id] ?? {}} />
+                <DetailContent item={item} tone={tone} detail={details[item.id] ?? {}} staggerRows={direction === null} />
               </div>
               <button
                 type="button"
@@ -225,9 +225,11 @@ type ContentProps = {
   item: MenuItem
   tone: TierTone
   detail: MenuDetail
+  // Rows cascade in only when the sheet first opens; replaying it while browsing leaves the sheet blank for a moment.
+  staggerRows: boolean
 }
 
-function DetailContent({ item, tone, detail }: ContentProps) {
+function DetailContent({ item, tone, detail, staggerRows }: ContentProps) {
   const soldOut = item.available === false
   const incomplete = detailFields.some(({ key }) => !detail[key]?.trim())
 
@@ -263,7 +265,7 @@ function DetailContent({ item, tone, detail }: ContentProps) {
               <div
                 key={key}
                 style={{ "--i": index } as React.CSSProperties}
-                className="detail-row col-span-2 grid grid-cols-subgrid items-baseline"
+                className={`col-span-2 grid grid-cols-subgrid items-baseline ${staggerRows ? "detail-row-enter" : ""}`}
               >
                 <dt className="font-bold">{label}</dt>
                 <dd>

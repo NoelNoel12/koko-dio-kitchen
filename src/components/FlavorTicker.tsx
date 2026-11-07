@@ -22,12 +22,9 @@ export function FlavorTicker({ names }: Props) {
 
   return (
     <div aria-hidden="true" className="overflow-hidden bg-ink py-2.5 font-display text-lg tracking-wide text-cream">
-      {/* The outer layer shifts with page scroll, so the strip speeds up while scrolling down. */}
-      <div className="ticker-scroll w-max">
-        <div className="ticker-track flex w-max">
-          {half(0)}
-          {half(1)}
-        </div>
+      <div className="ticker-track flex w-max">
+        {half(0)}
+        {half(1)}
       </div>
     </div>
   )
