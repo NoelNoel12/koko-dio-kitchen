@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { flushSync } from "react-dom"
 
 type Category = {
   id: string
@@ -37,22 +38,35 @@ export function CategoryNav({ categories, menuId, heroLogoId }: Props) {
     const menu = document.getElementById(menuId)
     if (!menu) return
     event.preventDefault()
+    const navBottom = event.currentTarget.closest("nav")?.getBoundingClientRect().bottom ?? 0
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
-    for (const section of menu.querySelectorAll<HTMLElement>(":scope > section")) {
-      section.hidden = id !== ALL && section.id !== id
+    // flushSync keeps the DOM change inside the view transition callback, so old and new states are captured.
+    const apply = () => {
+      for (const section of menu.querySelectorAll<HTMLElement>(":scope > section")) {
+        section.hidden = id !== ALL && section.id !== id
+      }
+      flushSync(() => setActive(id))
     }
-    setActive(id)
+
+    const scrollToMenu = () => {
+      if (menu.getBoundingClientRect().top < navBottom - 1 || id !== ALL) {
+        menu.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" })
+      }
+    }
+
+    if (document.startViewTransition && !reduceMotion) {
+      // Scroll after the morph so the page does not move under the transition snapshot.
+      document.startViewTransition(apply).finished.then(scrollToMenu, scrollToMenu)
+    } else {
+      apply()
+      scrollToMenu()
+    }
 
     const picked = items.find((item) => item.id === id)
     setStatus(
       id === ALL ? `Menampilkan semua ${total} rasa` : `Menampilkan ${picked?.count} rasa ${picked?.label}`,
     )
-
-    const navBottom = event.currentTarget.closest("nav")?.getBoundingClientRect().bottom ?? 0
-    if (menu.getBoundingClientRect().top < navBottom - 1 || id !== ALL) {
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      menu.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" })
-    }
   }
 
   return (
@@ -83,17 +97,27 @@ export function CategoryNav({ categories, menuId, heroLogoId }: Props) {
                   href={`#${item.id === ALL ? menuId : item.id}`}
                   aria-current={isActive ? "true" : undefined}
                   onClick={(event) => select(event, item.id)}
-                  className={`chip press flex min-h-11 w-full items-center justify-center rounded-[var(--radius-chip)] border-[2.5px] border-ink px-1.5 font-display text-[clamp(0.95rem,4.3vw,1.05rem)] leading-none tracking-wide whitespace-nowrap shadow-[var(--shadow-sticker)] sm:px-5 sm:text-lg ${
-                    isActive ? "bg-orange hover:bg-orange-deep" : "bg-paper hover:bg-peach"
+                  className={`chip press group relative isolate flex min-h-11 w-full items-center justify-center rounded-[var(--radius-chip)] border-[2.5px] border-ink bg-paper px-1.5 font-display text-[clamp(0.95rem,4.3vw,1.05rem)] leading-none tracking-wide whitespace-nowrap shadow-[var(--shadow-sticker)] sm:px-5 sm:text-lg ${
+                    isActive ? "" : "hover:bg-peach"
                   }`}
                 >
-                  {item.label}
+                  {/* One orange block that moves between chips during the view transition. */}
+                  {isActive ? (
+                    <span
+                      aria-hidden="true"
+                      style={{ viewTransitionName: "chip-active" }}
+                      className="absolute inset-0 -z-10 rounded-[calc(var(--radius-chip)-2.5px)] bg-orange group-hover:bg-orange-deep"
+                    />
+                  ) : null}
+                  {/* Its own transition layer keeps the label painted above the moving orange block. */}
+                  <span style={{ viewTransitionName: `chip-label-${item.id}` }}>{item.label}</span>
                 </a>
               </li>
             )
           })}
         </ul>
       </div>
+      <div aria-hidden="true" className="scroll-progress absolute inset-x-0 bottom-0 h-[5px] bg-orange" />
       <p role="status" className="sr-only">
         {status}
       </p>

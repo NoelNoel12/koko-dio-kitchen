@@ -44,7 +44,7 @@ Teks di hero ("10 rasa, mulai Rp18.000.") dan deskripsi untuk Google juga dihitu
 
 ### Isi rice box (nasi, lauk, saus, pelengkap)
 
-Setiap kartu menu bisa ditekan untuk membuka panel detail. Isinya diatur di `src/data/menu-detail.ts`, dicocokkan lewat `id` yang sama dengan `menu.ts`:
+Setiap kartu menu bisa ditekan untuk membuka panel detail. Di dalam panel, pembeli bisa pindah ke menu sebelum atau sesudahnya dengan tombol, geser ke samping, atau panah keyboard, dan menutupnya dengan geser ke bawah. Isinya diatur di `src/data/menu-detail.ts`, dicocokkan lewat `id` yang sama dengan `menu.ts`:
 
 ```ts
 "katsu-ori": { nasi: "", lauk: "", saus: "", pelengkap: "" },
@@ -169,7 +169,7 @@ Saat mencetak:
 5. **Placeholder**: ilustrasi kotak rice box dengan uap, digambar sendiri dalam SVG memakai warna palet, di atas latar peach dengan label "Foto menyusul". Bukan stock photo dan bukan karakter koki. Rasio dikunci 4:3. Saran `design-taste-frontend` untuk memakai foto stok tidak diikuti karena brief melarang.
 6. **Navigasi kategori jadi filter**, bukan lompat ke section. Dengan scroll, "Semua" dan "Rp18.000" berhenti di titik yang sama dan tombolnya jadi membingungkan. Dengan filter, tiap tombol punya arti jelas. Tanpa JavaScript, tombol tetap berfungsi sebagai link ke section. Tidak ada header terpisah di atas logo besar: logo kecil baru muncul di bar kategori setelah logo hero lewat saat di-scroll, jadi layar pertama tidak menampilkan logo dua kali.
 7. **Tema terang saja**: `design-taste-frontend` menyarankan dark mode, tapi brief menetapkan tema terang supaya warna logo dan kemasan tampil apa adanya.
-8. **Gerak seperti stiker yang ditempel**: judul hero masuk bertahap, ticker nama rasa berjalan seperti spanduk booth, stiker harga "ditempel" saat di-scroll, baris menu meluncur naik, chip kategori memantul saat dipilih, section yang muncul lagi lewat filter meluncur masuk, panel detail naik dari bawah dengan isi yang muncul berurutan, dan uap di ilustrasi panel bergerak pelan. Animasi yang mengikuti scroll hanya menggeser posisi, tidak pernah memudarkan teks, jadi kontras tetap penuh. Logo tidak pernah dianimasikan. Semua gerak mati otomatis kalau HP memakai pengaturan kurangi gerak (`prefers-reduced-motion`), dan browser yang belum mendukung animasi scroll tetap menampilkan semua konten tanpa gerak.
+8. **Gerak seperti stiker yang ditempel**: judul hero ditempel kata per kata, ticker nama rasa berjalan seperti spanduk booth dan ikut melaju saat halaman di-scroll, stiker harga "ditempel" saat masuk layar lalu menempel kecil di bawah bar kategori selama tier-nya dibaca, garis orange di bawah bar menunjukkan posisi scroll, filter harga memakai transisi morph (baris yang tetap meluncur ke posisi baru, blok orange bergeser antar chip), panel detail bisa digeser ke bawah untuk menutup dan digeser ke samping (atau tombol dan panah keyboard) untuk pindah menu, dan uap di ilustrasi bergoyang saat baris disentuh. Animasi yang mengikuti scroll hanya menggeser posisi, tidak pernah memudarkan teks, jadi kontras tetap penuh. Logo tidak pernah dianimasikan. Semua gerak mati otomatis kalau HP memakai pengaturan kurangi gerak (`prefers-reduced-motion`), dan browser yang belum mendukung animasi scroll tetap menampilkan semua konten tanpa gerak.
 
 ## Catatan teknis
 

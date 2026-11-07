@@ -158,6 +158,76 @@ for (const viewport of viewports) {
 
   const filterGlitch = navChecks.filter((check) => check.maxShownAfterTap !== null && check.maxShownAfterTap > 1)
 
+  // Detail sheet browsing: keyboard arrows, the next/previous buttons, a sideways swipe, and drag down to close.
+  const title = () => page.evaluate(() => document.querySelector("dialog h2")?.textContent ?? null)
+  const touch = (points) =>
+    page.evaluate((path) => {
+      const dialog = document.querySelector("dialog")
+      const make = (x, y) => new Touch({ identifier: 1, target: dialog, clientX: x, clientY: y })
+      const fire = (type, x, y) =>
+        dialog.dispatchEvent(
+          new TouchEvent(type, {
+            bubbles: true,
+            cancelable: true,
+            touches: type === "touchend" ? [] : [make(x, y)],
+            changedTouches: [make(x, y)],
+          }),
+        )
+      fire("touchstart", path[0][0], path[0][1])
+      for (const [x, y] of path.slice(1)) fire("touchmove", x, y)
+      const last = path[path.length - 1]
+      fire("touchend", last[0], last[1])
+    }, points)
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.getByRole("button", { name: /Katsu Ori/ }).click()
+  await page.waitForTimeout(400)
+  const browse = { opened: await title() }
+  await page.keyboard.press("ArrowRight")
+  await page.waitForTimeout(350)
+  browse.afterArrow = await title()
+  await page.getByRole("button", { name: /Berikutnya/ }).click()
+  await page.waitForTimeout(350)
+  browse.afterNext = await title()
+  await page.getByRole("button", { name: /Sebelumnya/ }).click()
+  await page.waitForTimeout(350)
+  browse.afterPrevious = await title()
+  await touch([[300, 400], [260, 402], [200, 404], [150, 405]])
+  await page.waitForTimeout(450)
+  browse.afterSwipe = await title()
+  await page.evaluate(() => document.querySelector("dialog")?.scrollTo({ top: 0 }))
+  await touch([[200, 300], [202, 340], [203, 420], [204, 480]])
+  await page.waitForTimeout(450)
+  browse.closedByDrag = !(await page.evaluate(() => document.querySelector("dialog")?.open))
+  const browseBroken =
+    browse.opened !== "Katsu Ori" ||
+    browse.afterArrow !== "BBQ" ||
+    browse.afterNext !== "Teriyaki" ||
+    browse.afterPrevious !== "BBQ" ||
+    browse.afterSwipe !== "Teriyaki" ||
+    !browse.closedByDrag
+
+  // Sticky price sticker: while reading the first tier it sits under the bar, shrunk.
+  const firstTier = page.locator("#menu > section").first()
+  await firstTier.evaluate((section) => window.scrollTo(0, section.getBoundingClientRect().top + window.scrollY + 260))
+  await page.waitForTimeout(400)
+  const sticky = await page.evaluate(() => {
+    const nav = document.querySelector("nav")?.getBoundingClientRect()
+    const holder = document.querySelector("#menu .tier-sticky")?.getBoundingClientRect()
+    const scale = getComputedStyle(document.querySelector("#menu .tier-shrink")).scale
+    return { navBottom: Math.round(nav?.bottom ?? 0), stickerTop: Math.round(holder?.top ?? 0), scale }
+  })
+  await page.screenshot({ path: path.join(outDir, `${name}-sticky.png`) })
+  const stickyBroken = Math.abs(sticky.stickerTop - sticky.navBottom - 8) > 4 || sticky.scale !== "0.6"
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+  await page.waitForTimeout(300)
+  const progress = await page.evaluate(() => {
+    const bar = document.querySelector(".scroll-progress")
+    const nav = document.querySelector("nav")
+    return bar && nav ? Math.round((bar.getBoundingClientRect().width / nav.getBoundingClientRect().width) * 100) : 0
+  })
+  const progressBroken = progress < 98
+
   // The ticker must stay wider than the screen at every point of its loop, and the footer logo must be whole.
   const extras = await page.evaluate(() => {
     const track = document.querySelector(".ticker-track")
@@ -180,11 +250,11 @@ for (const viewport of viewports) {
       check.current !== check.chip ||
       (check.chip === "Semua" ? check.visibleSections.length < 2 : check.visibleSections.length !== 1 || !check.visibleSections[0]?.includes(check.chip)),
   )
-  if (report.horizontalOverflow > 0 || report.smallTargets.length || report.clipped.length || coveredHeadings.length || wrongActive.length || detailBroken || navLogoBroken || hiddenInView.length || filterGlitch.length || extrasBroken || errors.length) {
+  if (report.horizontalOverflow > 0 || report.smallTargets.length || report.clipped.length || coveredHeadings.length || wrongActive.length || detailBroken || navLogoBroken || hiddenInView.length || filterGlitch.length || extrasBroken || browseBroken || stickyBroken || progressBroken || errors.length) {
     failed = true
   }
 
-  console.log(JSON.stringify({ width: viewport.width, ...report, navChecks, wrongActive, filterGlitch, extras, navLogo, hiddenInView, detail, afterClose, detailBroken, errors }, null, 1))
+  console.log(JSON.stringify({ width: viewport.width, ...report, navChecks, wrongActive, filterGlitch, extras, browse, sticky, progress, navLogo, hiddenInView, detail, afterClose, detailBroken, errors }, null, 1))
   await page.close()
 }
 
