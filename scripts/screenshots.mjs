@@ -147,7 +147,8 @@ for (const viewport of viewports) {
   const detailBroken =
     !detail.open ||
     detail.title !== "Katsu Ori" ||
-    detail.rows.length !== 4 ||
+    detail.rows.length !== 3 ||
+    detail.rows.some((row) => row.endsWith("Menyusul")) ||
     detail.focused !== "Tutup" ||
     !detail.fitsWidth ||
     !detail.fitsHeight ||

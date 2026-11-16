@@ -43,17 +43,22 @@ Semua menu ada di satu file: `src/data/menu.ts`.
 
 Teks di hero ("10 rasa, mulai Rp18.000.") dan deskripsi untuk Google juga dihitung dari file ini, jadi tidak perlu diedit manual.
 
-### Isi rice box (nasi, lauk, saus, pelengkap)
+### Isi rice box (nasi, lauk utama, saus)
 
 Setiap kartu menu bisa ditekan untuk membuka panel detail. Di dalam panel, pembeli bisa pindah ke menu sebelum atau sesudahnya dengan tombol, geser ke samping, atau panah keyboard, dan menutupnya dengan geser ke bawah. Isinya diatur di `src/data/menu-detail.ts`, dicocokkan lewat `id` yang sama dengan `menu.ts`:
 
 ```ts
-"katsu-ori": { nasi: "", lauk: "", saus: "", pelengkap: "" },
+"katsu-ori": {
+  nasi: NASI,
+  lauk: "Chicken katsu (ayam berbalut tepung roti)",
+  saus: "Saus katsu dan mayones, taburan wijen",
+},
 ```
 
-- Isian yang masih kosong tampil sebagai kotak **"Menyusul"**, ditambah catatan "Detail isi sedang dilengkapi". Jadi aman ditayangkan sebelum info aslinya didapat, karena tidak ada isi yang dikarang.
-- Isi teksnya begitu info asli sudah ada, misalnya `nasi: "Nasi putih"`.
-- Nama dan urutan baris (Nasi, Lauk utama, Saus, Pelengkap) diatur di `detailFields` di file yang sama.
+- Isi saat ini disusun dari foto menu dan resep umum tiap rasa, **bukan dari resep asli Koko Dio**. Cocokkan dengan pemilik UMKM dan ubah teksnya kalau ada yang berbeda.
+- `NASI` di atas file berisi teks nasi yang sama untuk semua menu ("Nasi putih berselimut telur dadar"), jadi cukup diubah sekali.
+- Isian yang dikosongkan (`""`) tampil sebagai kotak **"Menyusul"**, ditambah catatan "Detail isi sedang dilengkapi".
+- Nama dan urutan baris (Nasi, Lauk utama, Saus) diatur di `detailFields` di file yang sama.
 - Data ini sengaja dipisah dari `menu.ts`, supaya file yang diedit dari HP saat acara (stok habis) tetap pendek dan mudah dicari.
 
 > Kalau menu pernah diedit lewat github.com (misalnya menandai "Habis" saat acara), jalankan `git pull` dulu sebelum mengedit di komputer, supaya perubahan dari HP tidak tertimpa.
