@@ -21,6 +21,7 @@ Perintah lain:
 | `npm run lint` | Cek kode dengan ESLint |
 | `npm run typecheck` | Cek tipe TypeScript |
 | `npm run assets` | Buat ulang logo, favicon, ikon, dan gambar OG dari file di `assets-source/` |
+| `npm run photos` | Potong dan kecilkan foto dari `assets-source/Menu/` ke `public/menu/` |
 | `npm run print` | Buat ulang QR code dan file cetak di folder `print/` (lihat bagian QR code) |
 | `npm run og` | Buat ulang gambar preview link `public/og.png` (lihat bagian Gambar preview link) |
 | `npm run screenshots -- http://localhost:3000` | Screenshot di 360, 375, 390, 430, 768, 1280 px ke folder `screenshots/`, sekaligus cek horizontal scroll, ukuran target sentuh, dan filter kategori. Butuh `npx playwright install chromium` sekali. |
@@ -82,15 +83,27 @@ Selama kosong, tombol "Pesan lewat WhatsApp" dan link Instagram tidak tampil sam
 
 ## Memasang foto menu
 
-1. Foto dengan **rasio 4:3 landscape**. Ini rasio bawaan kamera HP, jadi biasanya tidak perlu dipotong. Ukuran yang disarankan **1200 × 900 px**, format JPG, di bawah 300 KB.
-2. Beri nama file sesuai `id` menu, lalu taruh di `public/menu/`. Contoh: `public/menu/katsu-ori.jpg`.
-3. Isi field `image` di `src/data/menu.ts`:
+Kesepuluh menu sudah punya foto. Foto asli disimpan di `assets-source/Menu/`, dan versi untuk website ada di `public/menu/`.
 
-   ```ts
-   { id: "katsu-ori", name: "Katsu Ori", price: 18000, image: "/menu/katsu-ori.jpg" },
+Untuk mengganti atau menambah foto:
+
+1. Taruh foto asli di `assets-source/Menu/` dengan nama file sesuai nama menu, misalnya `Katsu Ori.jpg` atau `Black Pepper.jpg`. Huruf besar, spasi, dan tanda hubung tidak berpengaruh.
+2. Jalankan:
+
+   ```bash
+   npm run photos
    ```
 
-Bingkai gambar sudah dikunci 4:3, jadi saat foto masuk tidak ada pergeseran layout. Foto dengan rasio lain otomatis dipotong di tengah. Next.js mengecilkan dan mengonversi foto ke AVIF/WebP secara otomatis. Empat foto pertama dimuat langsung, sisanya dimuat saat di-scroll.
+   Script ini memotong setiap foto ke rasio 4:3, mengecilkannya ke 1200 × 900 px, dan menyimpannya sebagai `public/menu/<id>.jpg` (sekitar 90 KB per foto). Kalau ada menu tanpa foto, atau foto tanpa menu yang cocok, script akan memberi tahu.
+3. Untuk menu baru, isi field `image` di `src/data/menu.ts`:
+
+   ```ts
+   { id: "katsu-ori", name: "Katsu Ori", price: 18000, image: "/menu/katsu-ori.jpg", available: true },
+   ```
+
+Catatan pemotongan: foto asli berasio 16:9 dengan kotak rice box sedikit di kiri tengah. Script memotong di sekitar kotak (`FOCUS_X` di `scripts/prepare-menu-photos.mjs`) supaya kedua sisi kotak tetap masuk bingkai. Kalau sesi foto berikutnya memakai komposisi lain, sesuaikan angka itu, atau potret langsung dalam rasio 4:3.
+
+Bingkai gambar di website dikunci 4:3, jadi tidak ada pergeseran layout saat foto dimuat. Next.js mengonversi foto ke AVIF/WebP dan menyesuaikan ukurannya dengan layar secara otomatis. Empat foto pertama dimuat langsung, sisanya dimuat saat di-scroll. Menu yang belum punya `image` menampilkan ilustrasi "Foto menyusul".
 
 ## Push ke GitHub
 
@@ -165,7 +178,7 @@ Saat mencetak:
 1. **Font**: Lilita One untuk judul, karena hurufnya bulat, gemuk, dan rapat seperti wordmark logo. Plus Jakarta Sans untuk teks, karena tetap jelas di ukuran kecil dan dirancang oleh studio tipografi Indonesia.
 2. **Gaya sticker, logo apa adanya**: kartu, tombol, dan label memakai border hitam 2,5 px, sudut membulat besar, dan bayangan keras 4 px tanpa blur, meniru outline logo. Logonya sendiri selalu tampil persis seperti file aslinya, tanpa rotasi, bayangan, atau bingkai, baik di website maupun di media cetak. Skill `taste-skill` melarang bayangan dan `design-taste-frontend` melarang hitam murni. Keduanya kalah oleh palet dan gaya logo sesuai aturan prioritas brief.
 3. **Dua tier, dua warna**: tiap kelompok dibuka stiker harga besar yang sedikit miring, berisi harga dan jumlah rasa. Tier Rp18.000 orange dengan teks hitam, tier Rp25.000 hitam dengan teks orange. Warna yang sama dipakai di label harga tiap kartu dan di panel detail, jadi tier terbaca dari jauh, tidak hanya di judul section.
-4. **Daftar dulu, kartu foto nanti**: selama belum ada satu pun foto menu, menu tampil sebagai daftar ringkas: thumbnail foto 4:3 di kiri, lalu nama, label harga, dan "Lihat isi". Foto tetap terlihat tanpa perlu membuka panel detail, tapi daftar tetap pendek untuk pembeli yang sedang antre. Begitu ada menu yang punya `image`, tampilan otomatis berubah jadi kartu bergambar: 2 kolom di HP, 3 di tablet, dan 3 atau 4 di desktop supaya baris terakhir tidak bolong.
+4. **Daftar dulu, kartu foto nanti**: menu yang sudah berfoto tampil sebagai kartu bergambar. Kalau belum ada satu pun foto menu, menu tampil sebagai daftar ringkas: thumbnail foto 4:3 di kiri, lalu nama, label harga, dan "Lihat isi". Foto tetap terlihat tanpa perlu membuka panel detail, tapi daftar tetap pendek untuk pembeli yang sedang antre. Begitu ada menu yang punya `image`, tampilan otomatis berubah jadi kartu bergambar: 2 kolom di HP, 3 di tablet, dan 3 atau 4 di desktop supaya baris terakhir tidak bolong.
 5. **Placeholder**: ilustrasi kotak rice box dengan uap, digambar sendiri dalam SVG memakai warna palet, di atas latar peach dengan label "Foto menyusul". Bukan stock photo dan bukan karakter koki. Rasio dikunci 4:3. Saran `design-taste-frontend` untuk memakai foto stok tidak diikuti karena brief melarang.
 6. **Navigasi kategori jadi filter**, bukan lompat ke section. Dengan scroll, "Semua" dan "Rp18.000" berhenti di titik yang sama dan tombolnya jadi membingungkan. Dengan filter, tiap tombol punya arti jelas. Tanpa JavaScript, tombol tetap berfungsi sebagai link ke section. Tidak ada header terpisah di atas logo besar: logo kecil baru muncul di bar kategori setelah logo hero lewat saat di-scroll, jadi layar pertama tidak menampilkan logo dua kali.
 7. **Tema terang saja**: `design-taste-frontend` menyarankan dark mode, tapi brief menetapkan tema terang supaya warna logo dan kemasan tampil apa adanya.
@@ -197,9 +210,10 @@ Gambar ini statis. Berbeda dengan website, tanggal di gambar preview tidak hilan
 assets-source/          Logo resolusi penuh (tidak ikut build)
 public/brand/           Logo besar dan logo kecil hasil script
 public/og.png           Gambar preview saat link dibagikan (npm run og)
-public/menu/            Foto menu (buat foldernya saat foto pertama masuk)
+assets-source/Menu/     Foto menu asli (tidak ikut build)
+public/menu/            Foto menu 1200 x 900 hasil npm run photos
 print/                  QR code, standee A4, dan kartu meja A6 (tidak ikut build)
-scripts/                prepare-assets.mjs, print-qr.mjs, og-image.mjs, brand-html.mjs, screenshots.mjs
+scripts/                prepare-assets.mjs, prepare-menu-photos.mjs, print-qr.mjs, og-image.mjs, brand-html.mjs, screenshots.mjs
 src/app/                layout, halaman, CSS global, favicon, ikon, manifest
 src/components/         Hero, EventDate, FlavorTicker, CategoryNav, MenuSection, MenuRow, MenuCard, MenuImage, MenuDetail, Footer, WhatsAppButton
 src/data/menu.ts        Daftar menu, harga, dan status habis

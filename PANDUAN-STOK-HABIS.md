@@ -22,13 +22,13 @@ Pegang tugas ini oleh **satu orang saja** selama acara, supaya tidak ada dua ora
 2. Cari baris rasa yang habis. Setiap rasa ada di satu baris, contohnya:
 
    ```
-   { id: "katsu-ori", name: "Katsu Ori", price: 18000, available: true },
+   { id: "katsu-ori", name: "Katsu Ori", price: 18000, image: "/menu/katsu-ori.jpg", available: true },
    ```
 
 3. Ganti **hanya kata `true`** di baris itu menjadi **`false`**:
 
    ```
-   { id: "katsu-ori", name: "Katsu Ori", price: 18000, available: false },
+   { id: "katsu-ori", name: "Katsu Ori", price: 18000, image: "/menu/katsu-ori.jpg", available: false },
    ```
 
    Jangan menghapus koma, tanda kutip, atau kurung kurawal.
